@@ -9,6 +9,8 @@ import { Loader2, Camera, Check, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MetaMaskConnector } from "@/components/metamask-connector"
 import { Steps } from "@/components/steps"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function RegisterPage() {
   const [step, setStep] = useState(1)
@@ -18,6 +20,11 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [account, setAccount] = useState<string | null>(null)
   const [faceScan, setFaceScan] = useState<string | null>(null)
+  const [userDetails, setUserDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: ""
+  })
   const webcamRef = useRef<Webcam>(null)
   const router = useRouter()
 
@@ -90,8 +97,9 @@ export default function RegisterPage() {
             <Steps
               steps={[
                 { id: 1, name: "Connect Wallet" },
-                { id: 2, name: "Biometric Scan" },
-                { id: 3, name: "Complete" },
+                { id: 2, name: "User Details" },
+                { id: 3, name: "Biometric Scan" },
+                { id: 4, name: "Complete" },
               ]}
               currentStep={step}
             />
@@ -124,6 +132,59 @@ export default function RegisterPage() {
             )}
 
             {step === 2 && (
+              <div className="space-y-4">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-slate-300">Connected as:</p>
+                  <p className="text-sm font-mono text-orange-400 truncate">{account}</p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-slate-300">First Name</Label>
+                    <Input
+                      id="firstName"
+                      value={userDetails.firstName}
+                      onChange={(e) => setUserDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Enter your first name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-slate-300">Last Name</Label>
+                    <Input
+                      id="lastName"
+                      value={userDetails.lastName}
+                      onChange={(e) => setUserDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Enter your last name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-slate-300">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={userDetails.email}
+                      onChange={(e) => setUserDetails(prev => ({ ...prev, email: e.target.value }))}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+
+                  <Button 
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                    onClick={() => setStep(3)}
+                    disabled={!userDetails.firstName || !userDetails.lastName || !userDetails.email}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
               <div className="space-y-4">
                 <div className="text-center mb-4">
                   <p className="text-sm text-slate-300">Connected as:</p>
@@ -167,7 +228,7 @@ export default function RegisterPage() {
                     >
                       Retake
                     </Button>
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => setStep(3)}>
+                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => setStep(4)}>
                       Confirm
                     </Button>
                   </div>
@@ -175,20 +236,20 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {step === 3 && (
+            {step === 4 && (
               <div className="space-y-4 text-center">
                 <div className="rounded-full bg-green-500/20 p-3 w-16 h-16 mx-auto">
                   <Check className="h-10 w-10 text-green-500" />
                 </div>
                 <h3 className="text-xl font-semibold text-white">Ready to Complete</h3>
                 <p className="text-slate-300">
-                  Your wallet is connected and biometric data has been captured. Click below to complete registration.
+                  Your wallet is connected, details are saved, and biometric data has been captured. Click below to complete registration.
                 </p>
               </div>
             )}
           </CardContent>
           <CardFooter>
-            {step === 3 && (
+            {step === 4 && (
               <Button
                 className="w-full bg-orange-500 hover:bg-orange-600"
                 onClick={handleRegister}
