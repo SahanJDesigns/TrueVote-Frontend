@@ -68,17 +68,95 @@ export default function RegisterPage() {
   }
 
   const handleRegister = async () => {
+    if (!account || !faceScan) {
+      setError("Missing required data")
+      return
+    }
+
     setIsRegistering(true)
     setError(null)
 
     try {
-      // Simulate registration process
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Convert base64 image to blob with compression
+      const base64Data = faceScan.split(',')[1]
+      const byteCharacters = atob(base64Data)
+      const byteArrays = []
+      
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512)
+        const byteNumbers = new Array(slice.length)
+        
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i)
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers)
+        byteArrays.push(byteArray)
+      }
+      
+      const blob = new Blob(byteArrays, { type: 'image/jpeg' })
+      
+      // Create a canvas to compress the image
+      const img = new Image()
+      img.src = URL.createObjectURL(blob)
+      
+      const compressedFile = await new Promise<File>((resolve) => {
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const MAX_WIDTH = 800
+          const MAX_HEIGHT = 600
+          let width = img.width
+          let height = img.height
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width
+              width = MAX_WIDTH
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height
+              height = MAX_HEIGHT
+            }
+          }
+          
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          ctx?.drawImage(img, 0, 0, width, height)
+          
+          // Convert to blob with compression
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const file = new File([blob], 'face.jpg', { type: 'image/jpeg' })
+              resolve(file)
+            }
+          }, 'image/jpeg', 0.7) // 0.7 is the compression quality (0.0 to 1.0)
+        }
+      })
 
-      // Redirect to campaigns page after successful registration
+      // Create form data
+      const formData = new FormData()
+      formData.append('wallet_address', account)
+      formData.append('first_name', userDetails.firstName)
+      formData.append('last_name', userDetails.lastName)
+      formData.append('email', userDetails.email)
+      formData.append('biometric_image', compressedFile)
+
+      // Make API call
+      const response = await fetch('http://localhost:8000/api/users/register', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Registration failed')
+      }
       router.push("/campaigns")
     } catch (err: any) {
       setError(err.message || "Registration failed")
+    } finally {
       setIsRegistering(false)
     }
   }
