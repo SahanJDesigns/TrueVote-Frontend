@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Web3 from "web3"
+import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -24,52 +26,59 @@ export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
 
   useEffect(() => {
-    // Simulate fetching campaigns from blockchain
     const fetchCampaigns = async () => {
-      try {
-        // In a real app, this would be fetched from the blockchain
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+      if (typeof window.ethereum === "undefined") {
+        alert("Please install MetaMask")
+        return
+      }
 
-        setCampaigns([
-          {
-            id: "1",
-            title: "Community Treasury Allocation",
-            description: "Vote on how to allocate the community treasury funds for Q2 2023",
-            totalVotes: 1243,
-            status: "active",
-            startDate: "2023-04-01",
-            endDate: "2023-04-15",
-          },
-          {
-            id: "2",
-            title: "Protocol Upgrade Proposal",
-            description: "Vote on the proposed changes to the protocol's core functionality",
-            totalVotes: 892,
-            status: "active",
-            startDate: "2023-04-05",
-            endDate: "2023-04-20",
-          },
-          {
-            id: "3",
-            title: "Governance Structure Reform",
-            description: "Proposal to modify the current governance structure",
-            totalVotes: 1567,
-            status: "completed",
-            startDate: "2023-03-10",
-            endDate: "2023-03-25",
-          },
-          {
-            id: "4",
-            title: "New Partnership Approval",
-            description: "Vote on the proposed strategic partnership with DeFi protocol",
-            totalVotes: 0,
-            status: "upcoming",
-            startDate: "2023-04-20",
-            endDate: "2023-05-05",
-          },
-        ])
-      } catch (error) {
-        console.error("Error fetching campaigns:", error)
+      const web3 = new Web3(window.ethereum)
+      const factory = new web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
+
+      try {
+        await window.ethereum.request({ method: "eth_requestAccounts" })
+        const addresses: string[] = await factory.methods.getDeployedCampaigns().call()
+
+        const campaignDetails: Campaign[] = await Promise.all(
+          addresses.map(async (address, index) => {
+            const campaignContract = new web3.eth.Contract(CAMPAIGN_ABI, address)
+            const [
+              title,
+              description,
+              totalVotes,
+              startTimestamp,
+              durationMinutes
+            ] = await Promise.all([
+              campaignContract.methods.getCampaignName().call(),
+              campaignContract.methods.getCampaignDescription().call(),
+              campaignContract.methods.getVotersCount().call(),
+              campaignContract.methods.getStartTime().call(),
+              campaignContract.methods.getCampaignDuration().call(),
+            ])
+
+            const startDate = new Date(Number(startTimestamp) * 1000)
+            const endDate = new Date(startDate.getTime() + Number(durationMinutes) * 60000)
+
+            const now = new Date()
+            let status: Campaign["status"] = "upcoming"
+            if (now >= startDate && now <= endDate) status = "active"
+            else if (now > endDate) status = "completed"
+
+            return {
+              id: address,
+              title: String(title || ''),
+              description: String(description || ''),
+              totalVotes: Number(totalVotes),
+              status,
+              startDate: startDate.toISOString(),
+              endDate: endDate.toISOString(),
+            }
+          })
+        )
+
+        setCampaigns(campaignDetails)
+      } catch (err) {
+        console.error("Error fetching campaigns:", err)
       } finally {
         setIsLoading(false)
       }
@@ -94,7 +103,6 @@ export default function CampaignsPage() {
   return (
     <div className="min-h-screen bg-slate-900">
       <DashboardHeader />
-
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
@@ -171,16 +179,10 @@ export default function CampaignsPage() {
             )}
           </TabsContent>
 
-          {/* Other tab contents would filter the campaigns by status */}
-          <TabsContent value="active" className="mt-6">
-            {/* Active campaigns */}
-          </TabsContent>
-          <TabsContent value="completed" className="mt-6">
-            {/* Completed campaigns */}
-          </TabsContent>
-          <TabsContent value="upcoming" className="mt-6">
-            {/* Upcoming campaigns */}
-          </TabsContent>
+          {/* You can later implement filtering logic for these */}
+          <TabsContent value="active" className="mt-6"></TabsContent>
+          <TabsContent value="completed" className="mt-6"></TabsContent>
+          <TabsContent value="upcoming" className="mt-6"></TabsContent>
         </Tabs>
       </main>
     </div>
