@@ -42,7 +42,18 @@ export default function LoginPage() {
         throw new Error("No accounts found")
       }
 
+      // check if the given address is reistered
+      const result = await fetch('http://localhost:8000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address: accounts[0] }),
+      });
+
+      if (result.ok) {
       setAccount(accounts[0])
+      }
     } catch (err: any) {
       setError(err.message || "Failed to connect to MetaMask")
     } finally {
