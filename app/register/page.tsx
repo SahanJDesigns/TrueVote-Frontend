@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [account, setAccount] = useState<string | null>(null)
-  const [faceScan, setFaceScan] = useState<string | null>(null)
+  //const [faceScan, setFaceScan] = useState<string | null>(null)
   const [userDetails, setUserDetails] = useState({
     firstName: "",
     lastName: "",
@@ -71,7 +71,8 @@ export default function RegisterPage() {
   }
 
   const handleRegister = async () => {
-    if (!account || !faceScan) {
+    console.log(account, capturedImage)
+    if (!account || !capturedImage) {
       setError("Missing required data")
       return
     }
@@ -81,7 +82,7 @@ export default function RegisterPage() {
 
     try {
       // Convert base64 image to blob with compression
-      const base64Data = faceScan.split(',')[1]
+      const base64Data = capturedImage.split(',')[1]
       const byteCharacters = atob(base64Data)
       const byteArrays = []
       
