@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Web3 from "web3"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +19,8 @@ import { Loader2, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
-
+import { BiometricVerification } from "@/components/biometric-verification"
+import { ReCaptcha } from "@/components/recaptcha"
 interface Candidate {
   id: string
   name: string
@@ -36,7 +37,7 @@ interface Campaign {
   candidates: Candidate[]
 }
 
-export default function VotingPage({ params }: { params: { id: string } }) {
+export default function VotingPage() {
   const [web3, setWeb3] = useState<Web3 | null>(null)
   const [campaignAddress, setCampaignAddress] = useState<string | null>(null)
   const [account, setAccount] = useState<string>("")
@@ -47,6 +48,12 @@ export default function VotingPage({ params }: { params: { id: string } }) {
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const router = useRouter()
+  const params  = useParams();
+
+  const [showBiometric, setShowBiometric] = useState(false)
+  const [biometricVerified, setBiometricVerified] = useState(false)
+  const [captchaVerified, setCaptchaVerified] = useState(false)
+
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -60,10 +67,9 @@ export default function VotingPage({ params }: { params: { id: string } }) {
         setAccount(accounts[0])
 
         const factory = new _web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
-        const address = params.id;
-        setCampaignAddress(address)
+        setCampaignAddress(params.id as string)
 
-        const campaignContract = new _web3.eth.Contract(CAMPAIGN_ABI, address)
+        const campaignContract = new _web3.eth.Contract(CAMPAIGN_ABI, params.id as string)
 
         // Fetch campaign details separately
         const name = await campaignContract.methods.getCampaignName().call() as string;
@@ -89,7 +95,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
         );
         
         setCampaign({
-          id: params.id,
+          id: params.id as string,
           title: name,
           description,
           totalVotes: parseInt(voteTotal),
@@ -111,6 +117,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
   const handleVote = async () => {
     if (!web3 || !campaignAddress || !selectedCandidate) return
 
+    console.log(campaignAddress, selectedCandidate)
     setIsVoting(true)
     setError(null)
 
@@ -137,6 +144,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
       </div>
     )
   }
+
 
   if (!campaign) {
     return (
@@ -213,13 +221,35 @@ export default function VotingPage({ params }: { params: { id: string } }) {
               </RadioGroup>
             </CardContent>
             <CardFooter>
-              <Button
-                className="w-full bg-orange-500 hover:bg-orange-600"
-                disabled={!selectedCandidate || isVoting}
-                onClick={handleVote}
-              >
-                {isVoting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting Vote...</> : "Submit Vote"}
-              </Button>
+              <div className="w-full space-y-4">
+                  {!captchaVerified && (
+                    <div className="border border-slate-700 rounded-md p-4">
+                      <p className="text-sm text-slate-400 mb-3">Please verify that you are not a robot:</p>
+                      <ReCaptcha onVerify={() => setCaptchaVerified(true)} />
+                    </div>
+                  )}
+                   {!biometricVerified && (
+                    <div className="border border-slate-700 rounded-md p-4">
+                      <p className="text-sm text-slate-400 mb-3">Please verify your identity:</p>
+                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} />
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                    disabled={!selectedCandidate || isVoting || !biometricVerified || !captchaVerified}
+                    onClick={handleVote}
+                  >
+                    {isVoting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting Vote...
+                      </>
+                    ) : (
+                      "Submit Vote"
+                    )}
+                  </Button>
+                </div>
             </CardFooter>
           </Card>
         )}
@@ -246,6 +276,8 @@ export default function VotingPage({ params }: { params: { id: string } }) {
           </CardContent>
         </Card>
       </main>
+
+
     </div>
   )
 }
