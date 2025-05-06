@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Users, Calendar, BarChart } from "lucide-react"
+import { Loader2, Users, Calendar, BarChart, Plus } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
 
 interface Campaign {
@@ -109,6 +109,12 @@ export default function CampaignsPage() {
             <h1 className="text-3xl font-bold text-white mb-2">Campaigns</h1>
             <p className="text-slate-400">View and participate in active voting campaigns</p>
           </div>
+          <Link href="/campaigns/create" className="mt-4 md:mt-0">
+            <Button className="bg-orange-500 hover:bg-orange-600">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Campaign
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="all" className="mb-8">

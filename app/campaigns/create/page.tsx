@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Web3 from "web3";
-import { FACTORY_ABI, FACTORY_ADDRESS } from "../../lib/constants";
+import { FACTORY_ABI, FACTORY_ADDRESS } from "@/lib/constants";
 
 // No need to redeclare Window interface as it's already defined in global.d.ts
 
