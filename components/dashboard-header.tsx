@@ -26,20 +26,6 @@ export function DashboardHeader() {
           <Link href="/" className="text-xl font-bold text-white mr-8 text-orange-400">
             TrueVote
           </Link>
-
-          {!isMobile && (
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/campaigns" className="text-white hover:text-orange-400 transition-colors">
-                Campaigns
-              </Link>
-              <Link href="/voting" className="text-slate-300 hover:text-orange-400 transition-colors">
-                Vote
-              </Link>
-              <Link href="/results" className="text-slate-300 hover:text-orange-400 transition-colors">
-                Results
-              </Link>
-            </nav>
-          )}
         </div>
 
         <div className="flex items-center space-x-4">
@@ -64,53 +50,15 @@ export function DashboardHeader() {
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+        
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {isMobile && (
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <Menu className="h-5 w-5 text-white" />
-            </Button>
-          )}
         </div>
       </div>
-
-      {isMobile && isMenuOpen && (
-        <nav className="bg-slate-800 border-t border-slate-700 py-3 px-4">
-          <div className="flex flex-col space-y-3">
-            <Link
-              href="/campaigns"
-              className="text-white hover:text-orange-400 transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Campaigns
-            </Link>
-            <Link
-              href="/voting"
-              className="text-slate-300 hover:text-orange-400 transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Vote
-            </Link>
-            <Link
-              href="/results"
-              className="text-slate-300 hover:text-orange-400 transition-colors py-2"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Results
-            </Link>
-          </div>
-        </nav>
-      )}
     </header>
   )
 }

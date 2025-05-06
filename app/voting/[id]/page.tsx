@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Web3 from "web3"
 import { Button } from "@/components/ui/button"
 import {
@@ -36,7 +36,7 @@ interface Campaign {
   candidates: Candidate[]
 }
 
-export default function VotingPage({ params }: { params: { id: string } }) {
+export default function VotingPage() {
   const [web3, setWeb3] = useState<Web3 | null>(null)
   const [campaignAddress, setCampaignAddress] = useState<string | null>(null)
   const [account, setAccount] = useState<string>("")
@@ -47,6 +47,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const router = useRouter()
+  const params  = useParams();
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -60,10 +61,9 @@ export default function VotingPage({ params }: { params: { id: string } }) {
         setAccount(accounts[0])
 
         const factory = new _web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
-        const address = params.id;
-        setCampaignAddress(address)
+        setCampaignAddress(params.id as string)
 
-        const campaignContract = new _web3.eth.Contract(CAMPAIGN_ABI, address)
+        const campaignContract = new _web3.eth.Contract(CAMPAIGN_ABI, params.id as string)
 
         // Fetch campaign details separately
         const name = await campaignContract.methods.getCampaignName().call() as string;
@@ -89,7 +89,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
         );
         
         setCampaign({
-          id: params.id,
+          id: params.id as string,
           title: name,
           description,
           totalVotes: parseInt(voteTotal),
@@ -111,6 +111,7 @@ export default function VotingPage({ params }: { params: { id: string } }) {
   const handleVote = async () => {
     if (!web3 || !campaignAddress || !selectedCandidate) return
 
+    console.log(campaignAddress, selectedCandidate)
     setIsVoting(true)
     setError(null)
 
