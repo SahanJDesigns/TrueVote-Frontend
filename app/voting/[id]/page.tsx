@@ -19,7 +19,8 @@ import { Loader2, ArrowLeft, Check, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
-
+import { BiometricVerification } from "@/components/biometric-verification"
+import { ReCaptcha } from "@/components/recaptcha"
 interface Candidate {
   id: string
   name: string
@@ -48,6 +49,11 @@ export default function VotingPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const router = useRouter()
   const params  = useParams();
+
+  const [showBiometric, setShowBiometric] = useState(false)
+  const [biometricVerified, setBiometricVerified] = useState(false)
+  const [captchaVerified, setCaptchaVerified] = useState(false)
+
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -139,6 +145,7 @@ export default function VotingPage() {
     )
   }
 
+
   if (!campaign) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -214,13 +221,35 @@ export default function VotingPage() {
               </RadioGroup>
             </CardContent>
             <CardFooter>
-              <Button
-                className="w-full bg-orange-500 hover:bg-orange-600"
-                disabled={!selectedCandidate || isVoting}
-                onClick={handleVote}
-              >
-                {isVoting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting Vote...</> : "Submit Vote"}
-              </Button>
+              <div className="w-full space-y-4">
+                  {!captchaVerified && (
+                    <div className="border border-slate-700 rounded-md p-4">
+                      <p className="text-sm text-slate-400 mb-3">Please verify that you are not a robot:</p>
+                      <ReCaptcha onVerify={() => setCaptchaVerified(true)} />
+                    </div>
+                  )}
+                   {!biometricVerified && (
+                    <div className="border border-slate-700 rounded-md p-4">
+                      <p className="text-sm text-slate-400 mb-3">Please verify your identity:</p>
+                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} />
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full bg-orange-500 hover:bg-orange-600"
+                    disabled={!selectedCandidate || isVoting || !biometricVerified || !captchaVerified}
+                    onClick={handleVote}
+                  >
+                    {isVoting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting Vote...
+                      </>
+                    ) : (
+                      "Submit Vote"
+                    )}
+                  </Button>
+                </div>
             </CardFooter>
           </Card>
         )}
@@ -247,6 +276,8 @@ export default function VotingPage() {
           </CardContent>
         </Card>
       </main>
+
+
     </div>
   )
 }
