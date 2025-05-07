@@ -6,13 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Loader2, Camera, Check, X, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { Checkbox } from "./ui/checkbox"
+import { set } from "date-fns"
 
 interface BiometricVerificationProps {
+  account: string
   verified: boolean
   setVerified: React.Dispatch<React.SetStateAction<boolean>>
+  attemptnumber: number
+  setAttemptNumber: React.Dispatch<React.SetStateAction<number>>
 }
 
-export function BiometricVerification({verified, setVerified}: BiometricVerificationProps) {
+export function BiometricVerification({verified, setVerified,attemptnumber,setAttemptNumber,account}: BiometricVerificationProps) {
   const [isCaptured, setIsCaptured] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [faceScan, setFaceScan] = useState<string | null>(null)
@@ -37,13 +41,34 @@ export function BiometricVerification({verified, setVerified}: BiometricVerifica
     setIsVerifying(true)
 
     try {
-      // Simulate biometric verification process
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      setAttemptNumber(attemptnumber => attemptnumber + 1)
+      if (!account) {
+        console.error("Missing required field: wallet_address");
+        setIsVerifying(false);
+        return;
+      }
 
-      // In a real app, you would send the face scan to your biometric verification service
-      // and get a response indicating whether the verification was successful
-      setVerified(true)
-      // For this demo, we'll simulate a successful verification
+      if (!faceScan) {
+        console.error("Missing required field: biometric_image");
+        setIsVerifying(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("wallet_address", account);
+      if (faceScan) {
+        const blob = await (await fetch(faceScan)).blob(); // Convert base64 to Blob
+        formData.append("biometric_image", blob, "face_scan.jpg"); // Append as file
+      }
+
+      const response = await fetch("http://localhost:8000/api/users/biometric_auth", {
+        method: "POST",
+        body: formData,
+      });
+      
+      const data = await response.json()
+      console.log(data)
+
     } catch (error) {
 
     } finally {

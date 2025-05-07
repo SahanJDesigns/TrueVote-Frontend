@@ -8,22 +8,12 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MetaMaskConnector } from "@/components/metamask-connector"
 
+
 export default function LoginPage() {
+  const router = useRouter()  
   const [isConnecting, setIsConnecting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [account, setAccount] = useState<string | null>(null)
-  const router = useRouter()
-
-  useEffect(() => {
-    if (account) {
-      // Simulate authentication verification
-      const timer = setTimeout(() => {
-        router.push("/campaigns")
-      }, 1500)
-
-      return () => clearTimeout(timer)
-    }
-  }, [account, router])
 
   const handleConnect = async () => {
     setIsConnecting(true)
@@ -49,11 +39,22 @@ export default function LoginPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ address: accounts[0] }),
+        credentials: 'include',
       });
 
+      const data = await result.json()
       if (result.ok) {
       setAccount(accounts[0])
       }
+      console.log("user data",accounts[0])
+
+      sessionStorage.setItem("wallet_address", accounts[0])
+      sessionStorage.setItem("user_firstname", data.firstName)
+      sessionStorage.setItem("user_lastname", data.lastName)
+      sessionStorage.setItem("user_email", data.email)
+
+      router.push("/campaigns")
+
     } catch (err: any) {
       setError(err.message || "Failed to connect to MetaMask")
     } finally {

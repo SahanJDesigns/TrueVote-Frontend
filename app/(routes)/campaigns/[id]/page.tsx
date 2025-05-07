@@ -21,6 +21,7 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { BiometricVerification } from "@/components/biometric-verification"
 import { ReCaptcha } from "@/components/recaptcha"
+import { set } from "date-fns"
 interface Candidate {
   id: string
   name: string
@@ -43,17 +44,20 @@ export default function VotingPage() {
   const [account, setAccount] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [isVoting, setIsVoting] = useState(false)
-  const [isVoted, setIsVoted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [selectedCandidate, setSelectedCandidate] = useState<string | null>(null)
   const router = useRouter()
   const params  = useParams();
 
-  const [showBiometric, setShowBiometric] = useState(false)
   const [biometricVerified, setBiometricVerified] = useState(false)
   const [captchaVerified, setCaptchaVerified] = useState(false)
 
+  const [isVoted, setIsVoted] = useState(false)
+  const [campainState, setCampainState] = useState('')
+  const [isOwner, setIsOwner] = useState(false)
+
+  const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -64,8 +68,12 @@ export default function VotingPage() {
         setWeb3(_web3)
         await window.ethereum.request({ method: "eth_requestAccounts" })
         const accounts = await _web3.eth.getAccounts()
-        setAccount(accounts[0])
 
+        const walletAddress = sessionStorage.getItem("wallet_address");
+        if (walletAddress && walletAddress in accounts) {
+            setAccount(walletAddress);
+        }
+        
         const factory = new _web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
         setCampaignAddress(params.id as string)
 
@@ -77,6 +85,27 @@ export default function VotingPage() {
         const endTime = await campaignContract.methods.getEndTime().call() as string;
         const candidateCount = await campaignContract.methods.getCandidatesCount().call();
         const voteTotal = await campaignContract.methods.getVotersCount().call() as string;
+
+          // isOwner fetching
+          // const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
+          // setIsOwner(isOwner);
+          setIsOwner(false);
+
+          // Campain state fetching
+          const startTimestamp = await campaignContract.methods.getStartTime().call();
+          const durationMinutes = await campaignContract.methods.getCampaignDuration().call();
+          const startDate = new Date(Number(startTimestamp) * 1000)
+          const endDate = new Date(startDate.getTime() + Number(durationMinutes) * 60000)
+          const now = new Date()
+          let status = "upcoming"
+          if (now >= startDate && now <= endDate) status = "active"
+          else if (now > endDate) status = "completed"
+          setCampainState(status)
+
+          //isvoted fetching
+          // const isVoted = await campaignContract.methods.hasVoted(accounts[0]).call() as boolean;
+          // setIsVoted(isVoted);
+          setIsVoted(false);
 
         const candidates = await Promise.all(
           Array.from({ length: Number(candidateCount) }).map(async (_, i) => {
@@ -182,13 +211,13 @@ export default function VotingPage() {
           </Alert>
         )}
 
-        {isVoted ? (
+        {isVoted && campainState === 'active' && (
           <Card className="border-green-600 bg-green-900/10 backdrop-blur-sm mb-8">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-green-500/20 p-3 w-16 h-16 mx-auto mb-4">
                 <Check className="h-10 w-10 text-green-500" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">Vote Submitted Successfully</h3>
+              <h3 className="text-xl font-semibold text-white mb-2">Voted Successfully</h3>
               <p className="text-slate-300 mb-4">
                 Your vote has been recorded on the blockchain. Thank you!
               </p>
@@ -197,7 +226,9 @@ export default function VotingPage() {
               </Button>
             </CardContent>
           </Card>
-        ) : (
+        )}
+
+        { campainState === 'active' && !isVoted && !isOwner &&(
           <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm mb-8">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white">Cast Your Vote</CardTitle>
@@ -231,7 +262,7 @@ export default function VotingPage() {
                    {!biometricVerified && (
                     <div className="border border-slate-700 rounded-md p-4">
                       <p className="text-sm text-slate-400 mb-3">Please verify your identity:</p>
-                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} />
+                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} attemptnumber={biometricVerificationAttemptNumber} setAttemptNumber={setBiometricVerificationAttemptNumber} account= {account} />
                     </div>
                   )}
 
@@ -253,11 +284,12 @@ export default function VotingPage() {
             </CardFooter>
           </Card>
         )}
-
+      {(isVoted || isOwner) && !(campainState === 'upcoming') &&(
         <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-white">Current Results</CardTitle>
-            <CardDescription className="text-slate-400">Live voting results</CardDescription>
+            <CardTitle className="text-xl font-bold text-white">{(campainState === 'completed')? 'Final':'Current'} Results</CardTitle>
+            {(campainState === 'completed')? <CardDescription className="text-slate-400">Final voting results are as follows</CardDescription>:
+            <CardDescription className="text-slate-400">Current voting results are as follows</CardDescription>}
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
@@ -275,6 +307,7 @@ export default function VotingPage() {
             </div>
           </CardContent>
         </Card>
+      )}
       </main>
 
 
