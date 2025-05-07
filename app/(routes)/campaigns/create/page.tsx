@@ -53,10 +53,10 @@ export default function CreateCampaignPage() {
           const walletAddress = sessionStorage.getItem("wallet_address");
           console.log("Wallet Address:", walletAddress);
           console.log("Connected Accounts:", accounts);
-          console.log(walletAddress && walletAddress in accounts)
-          if (walletAddress && walletAddress in accounts) {
-              setAccount(walletAddress);
-          }else{
+          console.log(walletAddress && accounts.includes(walletAddress))
+          if (walletAddress && accounts.includes(walletAddress)) {
+            setAccount(walletAddress);
+          } else {
             throw new Error("Wallet address not found in connected accounts.");
           }
   

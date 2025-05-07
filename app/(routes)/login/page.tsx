@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MetaMaskConnector } from "@/components/metamask-connector"
+import Web3 from "web3"
 
 
 export default function LoginPage() {
@@ -24,9 +25,12 @@ export default function LoginPage() {
       if (typeof window.ethereum === "undefined") {
         throw new Error("MetaMask is not installed")
       }
+      
+      const web3 = new Web3(window.ethereum);
 
       // Request account access
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+      await window.ethereum.request({ method: "eth_requestAccounts" })
+      const accounts = await web3.eth.getAccounts();
 
       if (accounts.length === 0) {
         throw new Error("No accounts found")
