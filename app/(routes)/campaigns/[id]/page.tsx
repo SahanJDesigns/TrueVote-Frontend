@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Web3 from "web3"
 import { Button } from "@/components/ui/button"
@@ -59,6 +59,8 @@ export default function VotingPage() {
   const [isOwner, setIsOwner] = useState(false)
 
   const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
+
+  const ws = useRef<WebSocket | null>(null)
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -130,6 +132,38 @@ export default function VotingPage() {
           endDate: new Date(parseInt(endTime) * 1000).toISOString().split("T")[0],
           candidates
         });
+
+        // First, switch to WebSocket provider for event support
+        const wsWeb3 = new Web3('ws://127.0.0.1:7545');
+        const wsCampaignContract = new wsWeb3.eth.Contract(CAMPAIGN_ABI, params.id as string)
+        
+        // Subscribe to VoteCast events
+        const voteCastEvent = wsCampaignContract.events.VoteCast();
+        voteCastEvent.on('data', (event) => {
+          const { candidateIndex, newVoteCount } = event.returnValues as { candidateIndex: string, newVoteCount: string }
+          console.log(`New vote for candidate ${candidateIndex}, new count: ${newVoteCount}`);
+          
+          // Update the UI with the new vote count
+          setCampaign(prevCampaign => {
+            if (!prevCampaign) return prevCampaign;
+            
+            const newCandidates = [...prevCampaign.candidates];
+            const index = parseInt(candidateIndex);
+            
+            if (newCandidates[index]) {
+              newCandidates[index] = {
+                ...newCandidates[index],
+                votes: parseInt(newVoteCount)
+              };
+            }
+            
+            return {
+              ...prevCampaign,
+              candidates: newCandidates,
+              totalVotes: prevCampaign.totalVotes + 1
+            };
+          });
+        });
         
       } catch (err) {
         console.error("Failed to load campaign details", err)
@@ -140,6 +174,12 @@ export default function VotingPage() {
     }
 
     loadCampaign()
+
+    return () => {
+      if (ws.current) {
+        ws.current.close()
+      }
+    }
   }, [params.id])
 
   const handleVote = async () => {
