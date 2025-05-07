@@ -21,7 +21,8 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { BiometricVerification } from "@/components/biometric-verification"
 import { ReCaptcha } from "@/components/recaptcha"
-import { set } from "date-fns"
+import { Badge } from "@/components/ui/badge"
+
 interface Candidate {
   id: string
   name: string
@@ -70,8 +71,8 @@ export default function VotingPage() {
         const accounts = await _web3.eth.getAccounts()
 
         const walletAddress = sessionStorage.getItem("wallet_address");
-        if (walletAddress && walletAddress in accounts) {
-            setAccount(walletAddress);
+        if (walletAddress && accounts.includes(walletAddress)) {
+          setAccount(walletAddress);
         }
         
         const factory = new _web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
@@ -87,9 +88,8 @@ export default function VotingPage() {
         const voteTotal = await campaignContract.methods.getVotersCount().call() as string;
 
           // isOwner fetching
-          // const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
-          // setIsOwner(isOwner);
-          setIsOwner(false);
+          const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
+          setIsOwner(isOwner);
 
           // Campain state fetching
           const startTimestamp = await campaignContract.methods.getStartTime().call();
@@ -103,9 +103,8 @@ export default function VotingPage() {
           setCampainState(status)
 
           //isvoted fetching
-          // const isVoted = await campaignContract.methods.hasVoted(accounts[0]).call() as boolean;
-          // setIsVoted(isVoted);
-          setIsVoted(false);
+          const isVoted = await campaignContract.methods.isVoted(accounts[0]).call() as boolean;
+          setIsVoted(isVoted);
 
         const candidates = await Promise.all(
           Array.from({ length: Number(candidateCount) }).map(async (_, i) => {
@@ -166,6 +165,19 @@ export default function VotingPage() {
     return (votes / campaign.totalVotes) * 100
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-500 border-green-500/20"
+      case "completed":
+        return "bg-slate-500/10 text-slate-300 border-slate-500/20"
+      case "upcoming":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20"
+      default:
+        return "bg-slate-500/10 text-slate-300 border-slate-500/20"
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -202,6 +214,16 @@ export default function VotingPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">{campaign.title}</h1>
           <p className="text-slate-400">{campaign.description}</p>
+          <div className="mt-3 text-slate-400 flex items-center gap-2">
+            {isOwner && (
+              <Badge className={"bg-purple-500/10 text-purple-500 border-purple-500/20"}>
+                Campaign Owner
+              </Badge>
+            )}
+            <Badge className={getStatusColor(campainState)}>
+              {campainState.charAt(0).toUpperCase() + campainState.slice(1)}
+            </Badge>
+          </div>
         </div>
 
         {error && (
@@ -211,7 +233,7 @@ export default function VotingPage() {
           </Alert>
         )}
 
-        {isVoted && campainState === 'active' && (
+        {isVoted && campainState === 'active' && !isOwner && (
           <Card className="border-green-600 bg-green-900/10 backdrop-blur-sm mb-8">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-green-500/20 p-3 w-16 h-16 mx-auto mb-4">
@@ -228,7 +250,7 @@ export default function VotingPage() {
           </Card>
         )}
 
-        { campainState === 'active' && !isVoted && !isOwner &&(
+        {campainState === 'active' && !isVoted && !isOwner && (
           <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm mb-8">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white">Cast Your Vote</CardTitle>
@@ -284,33 +306,43 @@ export default function VotingPage() {
             </CardFooter>
           </Card>
         )}
-      {(isVoted || isOwner) && !(campainState === 'upcoming') &&(
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-white">{(campainState === 'completed')? 'Final':'Current'} Results</CardTitle>
-            {(campainState === 'completed')? <CardDescription className="text-slate-400">Final voting results are as follows</CardDescription>:
-            <CardDescription className="text-slate-400">Current voting results are as follows</CardDescription>}
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {campaign.candidates.map((candidate) => (
-                <div key={parseInt(candidate.id)} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">{candidate.name}</span>
-                    <span className="text-slate-400 text-sm">
-                      {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
-                    </span>
+        
+        {/* Always show results for owner, otherwise only show if voted or campaign completed */}
+        {(isOwner || isVoted || campainState === 'completed') && (
+          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-white">
+                {campainState === 'completed' ? 'Final Results' : 'Current Results'}
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                {campainState === 'completed' 
+                  ? 'Final voting results are as follows' 
+                  : 'Current voting results are as follows'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {campaign.candidates.map((candidate) => (
+                  <div key={parseInt(candidate.id)} className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-white font-medium">{candidate.name}</span>
+                      <span className="text-slate-400 text-sm">
+                        {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
+                      </span>
+                    </div>
+                    <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
                   </div>
-                  <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
+                ))}
+                {/* Total Votes Casted */}
+                <hr className="border-t border-slate-700 my-4" />
+                <div className="flex justify-end items-center">
+                  <span className="text-slate-400 text-lg">{campaign.totalVotes} Total Votes Casted</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
-
-
     </div>
   )
 }

@@ -36,26 +36,26 @@ export default function LoginPage() {
         throw new Error("No accounts found")
       }
 
-      // check if the given address is reistered
-      const result = await fetch('http://localhost:8000/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: accounts[0] }),
-        credentials: 'include',
-      });
+      // // check if the given address is reistered
+      // const result = await fetch('http://localhost:8000/api/users/login', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ address: accounts[0] }),
+      //   credentials: 'include',
+      // });
 
-      const data = await result.json()
-      if (result.ok) {
-      setAccount(accounts[0])
-      }
+      // const data = await result.json()
+      // if (result.ok) {
+      // setAccount(accounts[0])
+      // }
       console.log("user data",accounts[0])
 
       sessionStorage.setItem("wallet_address", accounts[0])
-      sessionStorage.setItem("user_firstname", data.firstName)
-      sessionStorage.setItem("user_lastname", data.lastName)
-      sessionStorage.setItem("user_email", data.email)
+      // sessionStorage.setItem("user_firstname", data.firstName)
+      // sessionStorage.setItem("user_lastname", data.lastName)
+      // sessionStorage.setItem("user_email", data.email)
 
       router.push("/campaigns")
 
