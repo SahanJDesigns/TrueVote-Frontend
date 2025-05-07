@@ -14,10 +14,32 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Menu, LogOut, User, Settings } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
+import { log } from "console"
 
 export function DashboardHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const isMobile = useMobile()
+
+  const logout = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/api/users/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        document.cookie = "wallet_address=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = "/";
+      } else {
+        console.error("Failed to log out");
+      }
+    } catch (error) {
+      console.error("An error occurred during logout:", error);
+    }
+  }
 
   return (
     <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
@@ -46,12 +68,8 @@ export function DashboardHeader() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
         
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => logout()}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

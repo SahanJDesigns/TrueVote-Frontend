@@ -13,9 +13,12 @@ import { Steps } from "@/components/steps"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+
 type FaceStatus = 'no_face' | 'face_turned' | 'eyes_closed' | 'correct';
 
 export default function RegisterPage() {
+  const router = useRouter()
+  
   const [step, setStep] = useState(1)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isRegistering, setIsRegistering] = useState(false)
@@ -29,7 +32,7 @@ export default function RegisterPage() {
   })
   
   const webcamRef = useRef<Webcam>(null)
-  const router = useRouter()
+
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [message, setMessage] = useState<string>('Loading face detection...');
@@ -157,7 +160,14 @@ export default function RegisterPage() {
         const errorData = await response.json()
         throw new Error(errorData.detail || 'Registration failed')
       }
+
+      sessionStorage.setItem("wallet_address", account)
+      sessionStorage.setItem("user_firstname", userDetails.firstName)
+      sessionStorage.setItem("user_lastname", userDetails.lastName)
+      sessionStorage.setItem("user_email", userDetails.email)
+
       router.push("/campaigns")
+
     } catch (err: any) {
       setError(err.message || "Registration failed")
     } finally {

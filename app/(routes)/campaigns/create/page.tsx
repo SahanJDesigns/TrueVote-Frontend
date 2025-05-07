@@ -49,7 +49,16 @@ export default function CreateCampaignPage() {
   
           await window.ethereum.request({ method: "eth_requestAccounts" });
           const accounts = await web3Instance.eth.getAccounts();
-          setAccount(accounts[0]);
+
+          const walletAddress = sessionStorage.getItem("wallet_address");
+          console.log("Wallet Address:", walletAddress);
+          console.log("Connected Accounts:", accounts);
+          console.log(walletAddress && walletAddress in accounts)
+          if (walletAddress && walletAddress in accounts) {
+              setAccount(walletAddress);
+          }else{
+            throw new Error("Wallet address not found in connected accounts.");
+          }
   
           const factoryInstance = new web3Instance.eth.Contract(
             FACTORY_ABI,

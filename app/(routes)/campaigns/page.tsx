@@ -6,7 +6,6 @@ import Web3 from "web3"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Users, Calendar, BarChart, Plus } from "lucide-react"
 import { DashboardHeader } from "@/components/dashboard-header"
@@ -117,15 +116,6 @@ export default function CampaignsPage() {
           </Link>
         </div>
 
-        <Tabs defaultValue="all" className="mb-8">
-          <TabsList className="bg-slate-800 border border-slate-700">
-            <TabsTrigger value="all">All Campaigns</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="all" className="mt-6">
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
@@ -160,7 +150,7 @@ export default function CampaignsPage() {
                     </CardContent>
                     <CardFooter>
                       {campaign.status === "active" ? (
-                        <Link href={`/voting/${campaign.id}`} className="w-full">
+                        <Link href={`/campaigns/${campaign.id}`} className="w-full">
                           <Button className="w-full bg-orange-500 hover:bg-orange-600">Vote Now</Button>
                         </Link>
                       ) : campaign.status === "completed" ? (
@@ -183,13 +173,7 @@ export default function CampaignsPage() {
                 ))}
               </div>
             )}
-          </TabsContent>
 
-          {/* You can later implement filtering logic for these */}
-          <TabsContent value="active" className="mt-6"></TabsContent>
-          <TabsContent value="completed" className="mt-6"></TabsContent>
-          <TabsContent value="upcoming" className="mt-6"></TabsContent>
-        </Tabs>
       </main>
     </div>
   )
