@@ -22,6 +22,15 @@ import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { BiometricVerification } from "@/components/biometric-verification"
 import { ReCaptcha } from "@/components/recaptcha"
 import { Badge } from "@/components/ui/badge"
+import { Chart as PieChart } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface Candidate {
   id: string
@@ -61,6 +70,8 @@ export default function VotingPage() {
   const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
 
   const ws = useRef<WebSocket | null>(null)
+
+  const [chartType, setChartType] = useState<'linear' | 'pie'>('linear');
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -330,7 +341,7 @@ export default function VotingPage() {
 
                   <Button
                     className="w-full bg-orange-500 hover:bg-orange-600"
-                    disabled={!selectedCandidate || isVoting || !biometricVerified || !captchaVerified}
+                    disabled={!selectedCandidate || isVoting || !captchaVerified}
                     onClick={handleVote}
                   >
                     {isVoting ? (
@@ -362,22 +373,53 @@ export default function VotingPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {campaign.candidates.map((candidate) => (
-                  <div key={parseInt(candidate.id)} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-white font-medium">{candidate.name}</span>
-                      <span className="text-slate-400 text-sm">
-                        {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
-                      </span>
+                {chartType === 'linear' ? (
+                  campaign.candidates.map((candidate) => (
+                    <div key={parseInt(candidate.id)} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-white font-medium">{candidate.name}</span>
+                        <span className="text-slate-400 text-sm">
+                          {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
+                        </span>
+                      </div>
+                      <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
                     </div>
-                    <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <PieChart
+                    type="pie"
+                    data={{
+                      labels: campaign.candidates.map((candidate) => candidate.name),
+                      datasets: [
+                        {
+                          data: campaign.candidates.map((candidate) => candidate.votes),
+                          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: true,
+                      plugins: {
+                        legend: {
+                          position: "top",
+                        },
+                      },
+                    }}
+                    style={{ height: "300px", width: "300px", margin: "0 auto" }}
+                  />
+                )}
                 {/* Total Votes Casted */}
                 <hr className="border-t border-slate-700 my-4" />
                 <div className="flex justify-end items-center">
                   <span className="text-slate-400 text-lg">{campaign.totalVotes} Total Votes Casted</span>
                 </div>
+                <Button
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  onClick={() => setChartType(chartType === 'linear' ? 'pie' : 'linear')}
+                >
+                  Switch to {chartType === 'linear' ? 'Pie' : 'Linear'} Chart
+                </Button>
               </div>
             </CardContent>
           </Card>
