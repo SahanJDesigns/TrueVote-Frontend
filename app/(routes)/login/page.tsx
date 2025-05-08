@@ -46,7 +46,7 @@ export default function LoginPage() {
       if (result.ok) {
       setAccount(accounts[0])
       }
-      console.log("user data",accounts[0])
+      console.log("user data",accounts)
 
       sessionStorage.setItem("wallet_address", accounts[0])
       sessionStorage.setItem("user_firstname", data.firstName)
