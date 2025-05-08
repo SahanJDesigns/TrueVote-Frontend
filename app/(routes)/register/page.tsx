@@ -12,7 +12,7 @@ import { MetaMaskConnector } from "@/components/metamask-connector"
 import { Steps } from "@/components/steps"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
+import Web3 from "web3"
 
 type FaceStatus = 'no_face' | 'face_turned' | 'eyes_closed' | 'correct';
 
@@ -52,8 +52,11 @@ export default function RegisterPage() {
         throw new Error("MetaMask is not installed")
       }
 
+      const web3 = new Web3(window.ethereum)
+
       // Request account access
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+      await window.ethereum.request({ method: "eth_requestAccounts" })
+      const accounts = await web3.eth.getAccounts()
 
       if (accounts.length === 0) {
         throw new Error("No accounts found")

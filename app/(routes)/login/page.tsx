@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MetaMaskConnector } from "@/components/metamask-connector"
+import Web3 from "web3"
 
 
 export default function LoginPage() {
@@ -24,34 +25,38 @@ export default function LoginPage() {
       if (typeof window.ethereum === "undefined") {
         throw new Error("MetaMask is not installed")
       }
+      
+      const web3 = new Web3(window.ethereum);
 
       // Request account access
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+      await window.ethereum.request({ method: "eth_requestAccounts" })
+      const accounts = await web3.eth.getAccounts();
 
       if (accounts.length === 0) {
         throw new Error("No accounts found")
       }
 
-      // check if the given address is reistered
-      const result = await fetch('http://localhost:8000/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ address: accounts[0] }),
-        credentials: 'include',
-      });
+      // // check if the given address is reistered
+      // const result = await fetch('http://localhost:8000/api/users/login', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({ address: accounts[0] }),
+      //   credentials: 'include',
+      // });
 
-      const data = await result.json()
-      if (result.ok) {
-      setAccount(accounts[0])
-      }
+      // const data = await result.json()
+      // if (result.ok) {
+      // setAccount(accounts[0])
+      // }
       console.log("user data",accounts[0])
 
-      sessionStorage.setItem("wallet_address", accounts[0])
-      sessionStorage.setItem("user_firstname", data.firstName)
-      sessionStorage.setItem("user_lastname", data.lastName)
-      sessionStorage.setItem("user_email", data.email)
+      sessionStorage.setItem("wallet_address", accounts[0]);
+      document.cookie = `wallet_address=${accounts[0]}; path=/;`;
+      // sessionStorage.setItem("user_firstname", data.firstName)
+      // sessionStorage.setItem("user_lastname", data.lastName)
+      // sessionStorage.setItem("user_email", data.email)
 
       router.push("/campaigns")
 

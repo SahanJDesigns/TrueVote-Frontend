@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Web3 from "web3"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,17 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { BiometricVerification } from "@/components/biometric-verification"
 import { ReCaptcha } from "@/components/recaptcha"
-import { set } from "date-fns"
+import { Badge } from "@/components/ui/badge"
+import { Chart as PieChart } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from "chart.js";
+
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 interface Candidate {
   id: string
   name: string
@@ -59,6 +69,10 @@ export default function VotingPage() {
 
   const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
 
+  const ws = useRef<WebSocket | null>(null)
+
+  const [chartType, setChartType] = useState<'linear' | 'pie'>('linear');
+
   useEffect(() => {
     const loadCampaign = async () => {
       try {
@@ -70,8 +84,8 @@ export default function VotingPage() {
         const accounts = await _web3.eth.getAccounts()
 
         const walletAddress = sessionStorage.getItem("wallet_address");
-        if (walletAddress && walletAddress in accounts) {
-            setAccount(walletAddress);
+        if (walletAddress && accounts.includes(walletAddress)) {
+          setAccount(walletAddress);
         }
         
         const factory = new _web3.eth.Contract(FACTORY_ABI, FACTORY_ADDRESS)
@@ -87,9 +101,8 @@ export default function VotingPage() {
         const voteTotal = await campaignContract.methods.getVotersCount().call() as string;
 
           // isOwner fetching
-          // const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
-          // setIsOwner(isOwner);
-          setIsOwner(false);
+          const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
+          setIsOwner(isOwner);
 
           // Campain state fetching
           const startTimestamp = await campaignContract.methods.getStartTime().call();
@@ -103,9 +116,8 @@ export default function VotingPage() {
           setCampainState(status)
 
           //isvoted fetching
-          // const isVoted = await campaignContract.methods.hasVoted(accounts[0]).call() as boolean;
-          // setIsVoted(isVoted);
-          setIsVoted(false);
+          const isVoted = await campaignContract.methods.isVoted(accounts[0]).call() as boolean;
+          setIsVoted(isVoted);
 
         const candidates = await Promise.all(
           Array.from({ length: Number(candidateCount) }).map(async (_, i) => {
@@ -131,6 +143,38 @@ export default function VotingPage() {
           endDate: new Date(parseInt(endTime) * 1000).toISOString().split("T")[0],
           candidates
         });
+
+        // First, switch to WebSocket provider for event support
+        const wsWeb3 = new Web3('ws://127.0.0.1:7545');
+        const wsCampaignContract = new wsWeb3.eth.Contract(CAMPAIGN_ABI, params.id as string)
+        
+        // Subscribe to VoteCast events
+        const voteCastEvent = wsCampaignContract.events.VoteCast();
+        voteCastEvent.on('data', (event) => {
+          const { candidateIndex, newVoteCount } = event.returnValues as { candidateIndex: string, newVoteCount: string }
+          console.log(`New vote for candidate ${candidateIndex}, new count: ${newVoteCount}`);
+          
+          // Update the UI with the new vote count
+          setCampaign(prevCampaign => {
+            if (!prevCampaign) return prevCampaign;
+            
+            const newCandidates = [...prevCampaign.candidates];
+            const index = parseInt(candidateIndex);
+            
+            if (newCandidates[index]) {
+              newCandidates[index] = {
+                ...newCandidates[index],
+                votes: parseInt(newVoteCount)
+              };
+            }
+            
+            return {
+              ...prevCampaign,
+              candidates: newCandidates,
+              totalVotes: prevCampaign.totalVotes + 1
+            };
+          });
+        });
         
       } catch (err) {
         console.error("Failed to load campaign details", err)
@@ -141,6 +185,12 @@ export default function VotingPage() {
     }
 
     loadCampaign()
+
+    return () => {
+      if (ws.current) {
+        ws.current.close()
+      }
+    }
   }, [params.id])
 
   const handleVote = async () => {
@@ -164,6 +214,19 @@ export default function VotingPage() {
   const getVotePercentage = (votes: number) => {
     if (!campaign || campaign.totalVotes === 0) return 0
     return (votes / campaign.totalVotes) * 100
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-500 border-green-500/20"
+      case "completed":
+        return "bg-slate-500/10 text-slate-300 border-slate-500/20"
+      case "upcoming":
+        return "bg-blue-500/10 text-blue-500 border-blue-500/20"
+      default:
+        return "bg-slate-500/10 text-slate-300 border-slate-500/20"
+    }
   }
 
   if (isLoading) {
@@ -202,6 +265,16 @@ export default function VotingPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">{campaign.title}</h1>
           <p className="text-slate-400">{campaign.description}</p>
+          <div className="mt-3 text-slate-400 flex items-center gap-2">
+            {isOwner && (
+              <Badge className={"bg-purple-500/10 text-purple-500 border-purple-500/20"}>
+                Campaign Owner
+              </Badge>
+            )}
+            <Badge className={getStatusColor(campainState)}>
+              {campainState.charAt(0).toUpperCase() + campainState.slice(1)}
+            </Badge>
+          </div>
         </div>
 
         {error && (
@@ -211,7 +284,7 @@ export default function VotingPage() {
           </Alert>
         )}
 
-        {isVoted && campainState === 'active' && (
+        {isVoted && campainState === 'active' && !isOwner && (
           <Card className="border-green-600 bg-green-900/10 backdrop-blur-sm mb-8">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-green-500/20 p-3 w-16 h-16 mx-auto mb-4">
@@ -228,7 +301,7 @@ export default function VotingPage() {
           </Card>
         )}
 
-        { campainState === 'active' && !isVoted && !isOwner &&(
+        {campainState === 'active' && !isVoted && !isOwner && (
           <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm mb-8">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white">Cast Your Vote</CardTitle>
@@ -268,7 +341,7 @@ export default function VotingPage() {
 
                   <Button
                     className="w-full bg-orange-500 hover:bg-orange-600"
-                    disabled={!selectedCandidate || isVoting || !biometricVerified || !captchaVerified}
+                    disabled={!selectedCandidate || isVoting || !captchaVerified}
                     onClick={handleVote}
                   >
                     {isVoting ? (
@@ -284,33 +357,74 @@ export default function VotingPage() {
             </CardFooter>
           </Card>
         )}
-      {(isVoted || isOwner) && !(campainState === 'upcoming') &&(
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-white">{(campainState === 'completed')? 'Final':'Current'} Results</CardTitle>
-            {(campainState === 'completed')? <CardDescription className="text-slate-400">Final voting results are as follows</CardDescription>:
-            <CardDescription className="text-slate-400">Current voting results are as follows</CardDescription>}
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {campaign.candidates.map((candidate) => (
-                <div key={parseInt(candidate.id)} className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">{candidate.name}</span>
-                    <span className="text-slate-400 text-sm">
-                      {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
-                    </span>
-                  </div>
-                  <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
+        
+        {/* Always show results for owner, otherwise only show if voted or campaign completed */}
+        {(isOwner || isVoted || campainState === 'completed') && (
+          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-white">
+                {campainState === 'completed' ? 'Final Results' : 'Current Results'}
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                {campainState === 'completed' 
+                  ? 'Final voting results are as follows' 
+                  : 'Current voting results are as follows'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {chartType === 'linear' ? (
+                  campaign.candidates.map((candidate) => (
+                    <div key={parseInt(candidate.id)} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-white font-medium">{candidate.name}</span>
+                        <span className="text-slate-400 text-sm">
+                          {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
+                        </span>
+                      </div>
+                      <Progress value={getVotePercentage(candidate.votes)} className="h-2 bg-slate-700" />
+                    </div>
+                  ))
+                ) : (
+                  <PieChart
+                    type="pie"
+                    data={{
+                      labels: campaign.candidates.map((candidate) => candidate.name),
+                      datasets: [
+                        {
+                          data: campaign.candidates.map((candidate) => candidate.votes),
+                          backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+                        },
+                      ],
+                    }}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: true,
+                      plugins: {
+                        legend: {
+                          position: "top",
+                        },
+                      },
+                    }}
+                    style={{ height: "300px", width: "300px", margin: "0 auto" }}
+                  />
+                )}
+                {/* Total Votes Casted */}
+                <hr className="border-t border-slate-700 my-4" />
+                <div className="flex justify-end items-center">
+                  <span className="text-slate-400 text-lg">{campaign.totalVotes} Total Votes Casted</span>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <Button
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  onClick={() => setChartType(chartType === 'linear' ? 'pie' : 'linear')}
+                >
+                  Switch to {chartType === 'linear' ? 'Pie' : 'Linear'} Chart
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
-
-
     </div>
   )
 }
