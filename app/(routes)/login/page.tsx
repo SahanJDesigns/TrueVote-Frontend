@@ -52,7 +52,8 @@ export default function LoginPage() {
       // }
       console.log("user data",accounts[0])
 
-      sessionStorage.setItem("wallet_address", accounts[0])
+      sessionStorage.setItem("wallet_address", accounts[0]);
+      document.cookie = `wallet_address=${accounts[0]}; path=/;`;
       // sessionStorage.setItem("user_firstname", data.firstName)
       // sessionStorage.setItem("user_lastname", data.lastName)
       // sessionStorage.setItem("user_email", data.email)
