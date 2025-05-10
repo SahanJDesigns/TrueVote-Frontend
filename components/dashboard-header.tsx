@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { use, useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,10 +15,20 @@ import {
 import { Menu, LogOut, User, Settings } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
 import { log } from "console"
+import { set } from "date-fns"
 
 export function DashboardHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const isMobile = useMobile()
+  const [username, setUsername] = useState<string | null>(null)
+  const [walletAddress, setWalletAddress] = useState<string | null>(null)
+
+  useEffect(() => {
+    const user = sessionStorage.getItem('user_firstname')
+    const walletAddress = sessionStorage.getItem('wallet_address')
+    setUsername(user)
+    setWalletAddress(walletAddress)
+  }, [])
 
   const logout = async () => {
     try {
@@ -55,7 +65,7 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                  <AvatarImage src="/avatar.png?height=32&width=32" alt="User" />
                   <AvatarFallback className="bg-orange-500">UN</AvatarFallback>
                 </Avatar>
               </Button>
@@ -63,8 +73,8 @@ export function DashboardHeader() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">User</p>
-                  <p className="text-xs leading-none text-muted-foreground truncate">0x1a2b...3c4d</p>
+                  <p className="text-sm font-medium leading-none">{username}</p>
+                  <p className="text-xs leading-none text-muted-foreground truncate">{walletAddress}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

@@ -7,11 +7,10 @@ export function MetaMaskConnector() {
     <div className="flex flex-col items-center justify-center p-6 space-y-4">
       <div className="w-20 h-20 relative">
         <Image
-          src="/placeholder.svg?height=80&width=80"
+          src="/metamask.png?height=80&width=80"
           alt="MetaMask Fox"
           width={80}
           height={80}
-          className="rounded-full"
         />
       </div>
       <div className="text-center">

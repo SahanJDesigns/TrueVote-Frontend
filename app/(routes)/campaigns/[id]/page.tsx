@@ -20,7 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { FACTORY_ABI, FACTORY_ADDRESS, CAMPAIGN_ABI } from "@/lib/constants"
 import { BiometricVerification } from "@/components/biometric-verification"
-import { ReCaptcha } from "@/components/recaptcha"
+import  ReCaptcha  from "@/components/recaptcha"
 import { Badge } from "@/components/ui/badge"
 import { Chart as PieChart } from "react-chartjs-2";
 import {
@@ -62,16 +62,30 @@ export default function VotingPage() {
 
   const [biometricVerified, setBiometricVerified] = useState(false)
   const [captchaVerified, setCaptchaVerified] = useState(false)
+  const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
+  const [captchaAttemptNumber, setCaptchaAttemptNumber] = useState(0)
+  const [spoofingScore, setSpoofingScore] = useState(1)
+  const [faceMatchScore, setFaceMatchScore] = useState(0)
 
   const [isVoted, setIsVoted] = useState(false)
   const [campainState, setCampainState] = useState('')
   const [isOwner, setIsOwner] = useState(false)
+  const [chartType, setChartType] = useState<'linear' | 'pie'>('linear')
 
-  const [biometricVerificationAttemptNumber, setBiometricVerificationAttemptNumber] = useState(0)
 
   const ws = useRef<WebSocket | null>(null)
 
-  const [chartType, setChartType] = useState<'linear' | 'pie'>('linear');
+
+
+  const [timeSpent, setTimeSpent] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeSpent((prev) => prev + 1);
+    }, 60000); // Increment every minute
+
+    return () => clearInterval(interval); // Cleanup on component unmount
+  }, []);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -85,6 +99,7 @@ export default function VotingPage() {
 
         const walletAddress = sessionStorage.getItem("wallet_address");
         if (walletAddress && accounts.includes(walletAddress)) {
+          
           setAccount(walletAddress);
         }
         
@@ -101,7 +116,7 @@ export default function VotingPage() {
         const voteTotal = await campaignContract.methods.getVotersCount().call() as string;
 
           // isOwner fetching
-          const isOwner = await campaignContract.methods.isOwner(accounts[0]).call() as boolean;
+          const isOwner = await campaignContract.methods.isOwner(walletAddress).call() as boolean;
           setIsOwner(isOwner);
 
           // Campain state fetching
@@ -116,7 +131,7 @@ export default function VotingPage() {
           setCampainState(status)
 
           //isvoted fetching
-          const isVoted = await campaignContract.methods.isVoted(accounts[0]).call() as boolean;
+          const isVoted = await campaignContract.methods.isVoted(walletAddress).call() as boolean;
           setIsVoted(isVoted);
 
         const candidates = await Promise.all(
@@ -152,7 +167,6 @@ export default function VotingPage() {
         const voteCastEvent = wsCampaignContract.events.VoteCast();
         voteCastEvent.on('data', (event) => {
           const { candidateIndex, newVoteCount } = event.returnValues as { candidateIndex: string, newVoteCount: string }
-          console.log(`New vote for candidate ${candidateIndex}, new count: ${newVoteCount}`);
           
           // Update the UI with the new vote count
           setCampaign(prevCampaign => {
@@ -194,9 +208,42 @@ export default function VotingPage() {
   }, [params.id])
 
   const handleVote = async () => {
+    if(biometricVerified === false || captchaVerified === false) {
+      return
+    }
+    try {
+      const response = await fetch("http://localhost:8000/validate_vote/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          Address: account,
+          "Time Diff between first and last (Mins)": timeSpent,
+          "Face Attempts": biometricVerificationAttemptNumber,
+          "Detected As a Robot At Least Once": captchaAttemptNumber > 1,
+          "Face Match Percentage": biometricVerified ? 100 : 0,
+          "Liveness Score of The Face": biometricVerified ? 100 : 0,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to validate vote");
+      }
+
+      const data = await response.json();
+
+      if (data.is_fraud) {
+        setError("Vote validation failed. Please try again.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error validating vote:", error);
+      setError("Vote validation failed. Please try again.");
+    }
+
     if (!web3 || !campaignAddress || !selectedCandidate) return
 
-    console.log(campaignAddress, selectedCandidate)
     setIsVoting(true)
     setError(null)
 
@@ -249,10 +296,11 @@ export default function VotingPage() {
     )
   }
 
+
   return (
     <div className="min-h-screen bg-slate-900">
       <DashboardHeader />
-
+    
       <main className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
@@ -326,18 +374,17 @@ export default function VotingPage() {
             </CardContent>
             <CardFooter>
               <div className="w-full space-y-4">
-                  {!captchaVerified && (
+                  
                     <div className="border border-slate-700 rounded-md p-4">
                       <p className="text-sm text-slate-400 mb-3">Please verify that you are not a robot:</p>
-                      <ReCaptcha onVerify={() => setCaptchaVerified(true)} />
+                      <ReCaptcha attempts={captchaAttemptNumber} setAttempts={setCaptchaAttemptNumber} setIsVerified={setCaptchaVerified}/>
                     </div>
-                  )}
-                   {!biometricVerified && (
+
+                   
                     <div className="border border-slate-700 rounded-md p-4">
                       <p className="text-sm text-slate-400 mb-3">Please verify your identity:</p>
-                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} attemptnumber={biometricVerificationAttemptNumber} setAttemptNumber={setBiometricVerificationAttemptNumber} account= {account} />
+                      <BiometricVerification verified = {biometricVerified} setVerified={setBiometricVerified} attemptnumber={biometricVerificationAttemptNumber} setAttemptNumber={setBiometricVerificationAttemptNumber} account= {account} setFaceMatchScore = {setFaceMatchScore} setSpoofingScore = {setSpoofingScore} />
                     </div>
-                  )}
 
                   <Button
                     className="w-full bg-orange-500 hover:bg-orange-600"
@@ -373,7 +420,7 @@ export default function VotingPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {chartType === 'linear' ? (
+                { chartType == 'linear' ? (
                   campaign.candidates.map((candidate) => (
                     <div key={parseInt(candidate.id)} className="space-y-2">
                       <div className="flex justify-between items-center">
@@ -415,7 +462,7 @@ export default function VotingPage() {
                   <span className="text-slate-400 text-lg">{campaign.totalVotes} Total Votes Casted</span>
                 </div>
                 <Button
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="w-full bg-orange-500 hover:bg-orange-600"
                   onClick={() => setChartType(chartType === 'linear' ? 'pie' : 'linear')}
                 >
                   Switch to {chartType === 'linear' ? 'Pie' : 'Linear'} Chart
