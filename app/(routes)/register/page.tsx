@@ -77,7 +77,7 @@ export default function RegisterPage() {
   }
 
   const handleRegister = async () => {
-    console.log(account, capturedImage)
+   
     if (!account || !capturedImage) {
       setError("Missing required data")
       return

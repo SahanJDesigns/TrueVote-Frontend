@@ -51,12 +51,12 @@ export default function CreateCampaignPage() {
           const accounts = await web3Instance.eth.getAccounts();
           
           const walletAddress = sessionStorage.getItem("wallet_address");
-          console.log("Wallet Address:", walletAddress);
-          console.log("Connected Accounts:", accounts.map((account) => account.toLowerCase()));
-          console.log(walletAddress && walletAddress == accounts.map((account) => account.toLowerCase())[0])
-          
-
-          if (walletAddress && walletAddress == accounts.map((account) => account.toLowerCase())[0]) {
+  
+          if (walletAddress && accounts.includes(walletAddress)) {
+            setAccount(walletAddress);
+          }
+        
+          if (walletAddress && walletAddress == accounts[0]) {
               setAccount(walletAddress);
           }else{
             throw new Error("Please keep your login wallet as your active wallet.");
@@ -165,16 +165,7 @@ export default function CreateCampaignPage() {
       minute: "2-digit",
       hour12: false,
     })
-    console.log(
-      {
-        candidateNames,
-        durationInMinutes,
-        title,
-        description,
-        startTimestamp,
-        startTime,
-      }
-    )
+
     const receipt = await factory.methods
     .createCampaign(
       candidateNames,

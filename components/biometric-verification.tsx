@@ -14,17 +14,20 @@ interface BiometricVerificationProps {
   setVerified: React.Dispatch<React.SetStateAction<boolean>>
   attemptnumber: number
   setAttemptNumber: React.Dispatch<React.SetStateAction<number>>
+  setSpoofingScore: React.Dispatch<React.SetStateAction<number>>
+  setFaceMatchScore: React.Dispatch<React.SetStateAction<number>>
 }
 
-export function BiometricVerification({verified, setVerified,attemptnumber,setAttemptNumber,account}: BiometricVerificationProps) {
+export function BiometricVerification({verified, setVerified,attemptnumber,setAttemptNumber,account,setSpoofingScore,setFaceMatchScore}: BiometricVerificationProps) {
   const [isCaptured, setIsCaptured] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [faceScan, setFaceScan] = useState<string | null>(null)
   const webcamRef = useRef<Webcam>(null)
   const [showpopup, setShowPopup] = useState(false)
-
+  const [error, setError] = useState<string | null>(null)
 
   const captureImage = () => {
+    setError(null)
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot()
       setFaceScan(imageSrc)
@@ -67,12 +70,25 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
       });
       
       const data = await response.json()
-      console.log(data)
+  
+      if (data.is_match) {
+        setVerified(true)
+        setSpoofingScore(data.spoofing_score)
+        setFaceMatchScore(data.face_match_score)
+        setShowPopup(false)
+        setError(null)
+      }
+      else {
+        throw new Error("Biometric verification failed. Please try again.")
+      }
 
     } catch (error) {
-
+      console.error("Error during biometric verification:", error)
+      setError("Biometric verification failed. Please try again.")
+      setVerified(false)
     } finally {
       setIsVerifying(false)
+      setFaceScan(null)
     }
   }
 
@@ -118,6 +134,12 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
               </CardDescription>
             </CardHeader>
             <CardContent>
+                {error && (
+                <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500 text-red-400 text-sm">
+                  <p className="font-medium">Error:</p>
+                  <p>{error}</p>
+                </div>
+                )}
               <div className="space-y-4">
                 <div className="rounded-lg overflow-hidden border border-slate-700">
                   {!isCaptured ? (
@@ -145,37 +167,63 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                 </div>
 
                 {!isCaptured ? (
+                  !error ? (
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
-                      className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
-                      onClick={cancelVerification}
+                    variant="outline"
+                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    onClick={cancelVerification}
                     >
-                      <X className="mr-2 h-4 w-4" />
-                      Cancel
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel
                     </Button>
-                    <Button className="flex-1 bg-orange-500 hover:bg-orange-600" onClick={captureImage}>
-                      <Camera className="mr-2 h-4 w-4" />
-                      Capture Face
+                    <Button
+                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                    onClick={captureImage}
+                    >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Capture Face
                     </Button>
                   </div>
-                ) : !isVerifying ? (
+                  ) : (
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
-                      className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
-                      onClick={retakeImage}
+                    variant="outline"
+                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    onClick={cancelVerification}
                     >
-                      Retake
+                    <X className="mr-2 h-4 w-4" />
+                    Cancel
                     </Button>
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700" onClick={verifyBiometric}>
-                      <Check className="mr-2 h-4 w-4" />
-                      Verify Identity
+                    <Button
+                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                    onClick={captureImage}
+                    >
+                    <Camera className="mr-2 h-4 w-4" />
+                    Retry
                     </Button>
+                  </div>
+                  )
+                ) : !isVerifying ? (
+                  <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    onClick={retakeImage}
+                  >
+                    Retake
+                  </Button>
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    onClick={verifyBiometric}
+                  >
+                    <Check className="mr-2 h-4 w-4" />
+                    Verify Identity
+                  </Button>
                   </div>
                 ) : (
                   <div className="text-center text-slate-300">
-                    <p>Verifying your identity...</p>
+                  <p>Verifying your identity...</p>
                   </div>
                 )}
               </div>

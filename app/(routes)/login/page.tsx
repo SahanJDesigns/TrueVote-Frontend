@@ -47,16 +47,18 @@ export default function LoginPage() {
       });
 
       const data = await result.json()
-      if (result.ok) {
-      setAccount(accounts[0])
+      if (result.status === 404) {
+        throw new Error("You are not registered. Please register first.")
       }
-      console.log("user data",accounts)
-
+      if (result.ok) {
+        setAccount(accounts[0])
+      }
+    
       sessionStorage.setItem("wallet_address", accounts[0]);
       document.cookie = `wallet_address=${accounts[0]}; path=/;`;
-      // sessionStorage.setItem("user_firstname", data.firstName)
-      // sessionStorage.setItem("user_lastname", data.lastName)
-      // sessionStorage.setItem("user_email", data.email)
+      sessionStorage.setItem("user_firstname", data.first_name)
+      sessionStorage.setItem("user_lastname", data.last_name)
+      sessionStorage.setItem("user_email", data.email)
 
       router.push("/campaigns")
 

@@ -1,87 +1,74 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Shield, Check } from "lucide-react"
+import { Shield } from 'lucide-react';
+import React, { useRef } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
+
+const SITE_KEY = '6LfaMTArAAAAALD2BVOI4ZP8MjcL_esx4_LBZhTT';
 
 interface ReCaptchaProps {
-  onVerify: () => void
+  attempts: number;
+  setAttempts: React.Dispatch<React.SetStateAction<number>>;
+  setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function ReCaptcha({ onVerify }: ReCaptchaProps) {
-  const [isChecked, setIsChecked] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isVerified, setIsVerified] = useState(false)
+const ReCaptcha: React.FC<ReCaptchaProps> = ({ attempts, setAttempts, setIsVerified}) => {
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
-  const handleVerify = () => {
-    if (!isChecked) return
+  const handleSubmit = async (verifiedToken: string | null) => {
+    setAttempts(attempts + 1);
+  
+    if (!verifiedToken) {
+      alert('CAPTCHA verification failed. Please try again.');
+      setIsVerified(true);
+      recaptchaRef.current?.reset(); // Reset the CAPTCHA
+      return;
+    }
 
-    setIsVerifying(true)
+    try {
+      const response = await fetch('/api/verify-captcha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verifiedToken }),
+      });
 
-    // Simulate verification process
-    setTimeout(() => {
-      setIsVerifying(false)
-      setIsVerified(true)
-      onVerify()
-    }, 1500)
-  }
-
-  if (isVerified) {
-    return (
-      <div className="flex items-center justify-center p-4 bg-green-900/20 border border-green-800 rounded-md">
-        <Check className="h-5 w-5 text-green-500 mr-2" />
-        <span className="text-green-400">Verification complete</span>
-      </div>
-    )
-  }
+      const data = await response.json();
+      if (data.success) {
+        setIsVerified(true);
+      } else {
+        alert('CAPTCHA verification failed. Please try again.');
+        setIsVerified(false);
+        recaptchaRef.current?.reset(); // Reset the CAPTCHA
+      }
+    } catch (error) {
+      console.error('Error verifying CAPTCHA:', error);
+      alert('An error occurred during CAPTCHA verification. Please try again.');
+      setIsVerified(true);
+      recaptchaRef.current?.reset(); // Reset the CAPTCHA
+    }
+  };
 
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="flex items-start space-x-3">
-        <Checkbox
-          id="recaptcha"
-          checked={isChecked}
-          onCheckedChange={(checked) => setIsChecked(checked as boolean)}
-          className="mt-1"
-        />
-        <div className="space-y-1">
-          <label
-            htmlFor="recaptcha"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white cursor-pointer"
-          >
-            I'm not a robot
-          </label>
-          <p className="text-xs text-slate-400">
-            This helps us prevent automated voting and ensures the integrity of the election.
-          </p>
-        </div>
-      </div>
-
-      {isChecked && !isVerified && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="aspect-square bg-slate-700 rounded-md flex items-center justify-center">
-                <img
-                  src={`/placeholder.svg?height=60&width=60&text=${i + 1}`}
-                  alt={`Verification image ${i + 1}`}
-                  className="w-full h-full object-cover rounded-md"
-                />
-              </div>
-            ))}
-          </div>
-
-          <Button className="w-full bg-slate-700 hover:bg-slate-600" onClick={handleVerify} disabled={isVerifying}>
-            {isVerifying ? "Verifying..." : "Verify"}
-          </Button>
-        </div>
-      )}
-
-      <div className="flex items-center justify-center text-xs text-slate-500">
-        <Shield className="h-3 w-3 mr-1" />
+  <>
+    <div
+      className="rounded-xl overflow-hidden w-[300px] h-[75px] bg-transparent"
+      style={{ boxShadow: '0 0 0 1px #333' }}
+    >
+      <ReCAPTCHA
+        ref={recaptchaRef}
+        sitekey={SITE_KEY}
+        onChange={handleSubmit}
+        onExpired={() => handleSubmit(null)}
+        onErrored={() => handleSubmit(null)}
+        theme="dark"
+      />
+    </div>
+       <div className="flex items-center justify-center text-xs text-slate-500">   
+            <Shield className="h-3 w-3 mr-1" />
         <span>Protected by reCAPTCHA</span>
       </div>
-    </div>
-  )
-}
+  </>
+  );
+};
+
+export default ReCaptcha;
