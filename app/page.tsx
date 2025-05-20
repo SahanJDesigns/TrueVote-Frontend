@@ -14,7 +14,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground text-foreground flex flex-col items-center justify-center p-4 transition-colors">
       
+       {/* Move ModeToggle to top-left */}
+    <div className="absolute top-4 left-4 z-50">
       <ModeToggle />
+    </div>
 
       <div className="max-w-md w-full">
         <Card className=" bg-card text-card-foreground border border-border shadow-xl">

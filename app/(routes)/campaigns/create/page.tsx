@@ -197,7 +197,7 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary text-foreground">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground text-foreground">
       <DashboardHeader />
 
       <main className="container mx-auto px-4 py-8">

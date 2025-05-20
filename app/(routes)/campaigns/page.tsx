@@ -100,7 +100,7 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground">
       <DashboardHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">

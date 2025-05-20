@@ -72,7 +72,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground flex flex-col items-center justify-center p-4">
-      <ModeToggle/>
+       {/* Move ModeToggle to top-left */}
+    <div className="absolute top-4 left-4 z-50">
+      <ModeToggle />
+    </div>
       <div className="max-w-md w-full">
         <Card className="border-slate-700 bg-card backdrop-blur-sm">
           <CardHeader className="text-center">

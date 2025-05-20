@@ -298,7 +298,7 @@ export default function VotingPage() {
 
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground">
       <DashboardHeader />
     
       <main className="container mx-auto px-4 py-8">
@@ -365,7 +365,7 @@ export default function VotingPage() {
                         <Label htmlFor={`candidate-${candidate.id}`} className="text-foreground font-medium text-base cursor-pointer">
                           {candidate.name}
                         </Label>
-                        <p className="text-slate-400 text-sm mt-1">{candidate.description}</p>
+                        <p className="text-foreground text-sm mt-1">{candidate.description}</p>
                       </div>
                     </div>
                   ))}
@@ -407,7 +407,7 @@ export default function VotingPage() {
         
         {/* Always show results for owner, otherwise only show if voted or campaign completed */}
         {(isOwner || isVoted || campainState === 'completed') && (
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+          <Card className="border-slate-700 bg-card backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-foreground">
                 {campainState === 'completed' ? 'Final Results' : 'Current Results'}

@@ -3,6 +3,7 @@
 import { Shield } from 'lucide-react';
 import React, { useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { useTheme } from 'next-themes'; // <-- Get the current theme
 
 const SITE_KEY = '6LfaMTArAAAAALD2BVOI4ZP8MjcL_esx4_LBZhTT';
 
@@ -10,11 +11,12 @@ interface ReCaptchaProps {
   attempts: number;
   setAttempts: React.Dispatch<React.SetStateAction<number>>;
   setIsVerified: React.Dispatch<React.SetStateAction<boolean>>;
+  
 }
 
 const ReCaptcha: React.FC<ReCaptchaProps> = ({ attempts, setAttempts, setIsVerified}) => {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-
+  const { resolvedTheme } = useTheme(); // Gets "light" or "dark"
   const handleSubmit = async (verifiedToken: string | null) => {
     setAttempts(attempts + 1);
   
@@ -60,7 +62,7 @@ const ReCaptcha: React.FC<ReCaptchaProps> = ({ attempts, setAttempts, setIsVerif
         onChange={handleSubmit}
         onExpired={() => handleSubmit(null)}
         onErrored={() => handleSubmit(null)}
-        theme="dark"
+        theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
       />
     </div>
        <div className="flex items-center justify-center text-xs text-slate-500">   

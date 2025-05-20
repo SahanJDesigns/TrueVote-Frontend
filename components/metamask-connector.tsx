@@ -14,8 +14,8 @@ export function MetaMaskConnector() {
         />
       </div>
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-white">Connect with MetaMask</h3>
-        <p className="text-sm text-slate-400 mt-1">Connect your wallet to authenticate and participate in voting</p>
+        <h3 className="text-lg font-semibold text-foreground">Connect with MetaMask</h3>
+        <p className="text-sm text-foreground mt-1">Connect your wallet to authenticate and participate in voting</p>
       </div>
     </div>
   )
