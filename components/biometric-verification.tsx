@@ -109,27 +109,27 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
         <div className="space-y-1">
           <label
             htmlFor="recaptcha"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white cursor-pointer"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground cursor-pointer"
           >
             I am the rightful owner.
           </label>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-foreground">
             This helps us prevent fraud voting and ensures the integrity of the election.
             </p>
         </div>
       </div>
-      <div className="flex items-center justify-center text-xs text-slate-500">   
+      <div className="flex items-center justify-center text-xs text-foreground">   
             <Shield className="h-3 w-3 mr-1" />
         <span>Protected by Biometric Auth</span>
         </div>
     </div>
 
      {showpopup && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <Card className="border-slate-700 bg-slate-800/95 backdrop-blur-sm w-full max-w-md">
+        <div className="fixed inset-0 bg-background flex items-center justify-center z-50 p-4">
+          <Card className="border-slate-700 bg-card backdrop-blur-sm w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Biometric Verification</CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardTitle className="text-xl font-bold text-foreground">Biometric Verification</CardTitle>
+              <CardDescription className="text-foreground">
                 Please complete the face scan to verify your identity before voting
               </CardDescription>
             </CardHeader>
@@ -158,7 +158,7 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                     <div className="relative">
                       <img src={faceScan || ""} alt="Captured face" className="w-full" />
                       {isVerifying && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50">
+                        <div className="absolute inset-0 flex items-center justify-center bg-secondary">
                           <Loader2 className="h-12 w-12 animate-spin text-orange-500" />
                         </div>
                       )}
@@ -171,14 +171,14 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                   <div className="flex gap-2">
                     <Button
                     variant="outline"
-                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="flex-1 border-slate-600 text-foreground hover:bg-mute"
                     onClick={cancelVerification}
                     >
                     <X className="mr-2 h-4 w-4" />
                     Cancel
                     </Button>
                     <Button
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                    className="flex-1 bg-destructive hover:bg-destructive-foreground"
                     onClick={captureImage}
                     >
                     <Camera className="mr-2 h-4 w-4" />
@@ -189,14 +189,14 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                   <div className="flex gap-2">
                     <Button
                     variant="outline"
-                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="flex-1 border-slate-600 text-foreground hover:bg-mute"
                     onClick={cancelVerification}
                     >
                     <X className="mr-2 h-4 w-4" />
                     Cancel
                     </Button>
                     <Button
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                    className="flex-1 bg-destructive hover:bg-destructive-foreground"
                     onClick={captureImage}
                     >
                     <Camera className="mr-2 h-4 w-4" />
@@ -208,7 +208,7 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                   <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="flex-1 border-slate-600 text-foreground hover:bg-mute"
                     onClick={retakeImage}
                   >
                     Retake
@@ -222,7 +222,7 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
                   </Button>
                   </div>
                 ) : (
-                  <div className="text-center text-slate-300">
+                  <div className="text-center text-foreground">
                   <p>Verifying your identity...</p>
                   </div>
                 )}

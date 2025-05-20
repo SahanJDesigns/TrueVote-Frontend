@@ -8,6 +8,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { MetaMaskConnector } from "@/components/metamask-connector"
 import Web3 from "web3"
+import { ModeToggle } from "@/components/mode-toggle"
 
 
 export default function LoginPage() {
@@ -70,12 +71,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-secondary to-secondary-foreground flex flex-col items-center justify-center p-4">
+       {/* Move ModeToggle to top-left */}
+    <div className="absolute top-4 left-4 z-50">
+      <ModeToggle />
+    </div>
       <div className="max-w-md w-full">
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <Card className="border-slate-700 bg-card backdrop-blur-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-white">Login with MetaMask</CardTitle>
-            <CardDescription className="text-slate-300">
+            <CardTitle className="text-2xl font-bold text-foreground">Login with MetaMask</CardTitle>
+            <CardDescription className="text-foreground">
               Connect your wallet to access the voting platform
             </CardDescription>
           </CardHeader>
@@ -93,9 +98,9 @@ export default function LoginPage() {
                   <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-300">Connected as:</p>
+                  <p className="text-sm text-foreground">Connected as:</p>
                   <p className="text-sm font-mono text-orange-400 truncate">{account}</p>
-                  <p className="text-sm text-slate-300 mt-2">Verifying your account...</p>
+                  <p className="text-sm text-foreground mt-2">Verifying your account...</p>
                 </div>
               </div>
             ) : (
@@ -105,7 +110,7 @@ export default function LoginPage() {
           <CardFooter>
             {!account && (
               <Button
-                className="w-full bg-orange-500 hover:bg-orange-600"
+                className="w-full bg-destructive hover:bg-destructive-foreground"
                 onClick={handleConnect}
                 disabled={isConnecting}
               >

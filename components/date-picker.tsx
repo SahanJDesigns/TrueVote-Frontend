@@ -40,23 +40,23 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal bg-slate-900 border-slate-700 text-white hover:bg-slate-800 hover:text-white",
-            !date && "text-slate-400",
+            "w-full justify-start text-left font-normal bg-secondary border-slate-700 text-foreground hover:bg-muted hover:text-foreground",
+            !date && "text-foreground",
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
           {date ? format(date, "PPP p") : <span>Pick a date & time</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-4 space-y-4 bg-slate-800 border-slate-700">
+      <PopoverContent className="w-auto p-4 space-y-4 bg-secondary border-slate-700">
         <Calendar
           mode="single"
           selected={date}
           onSelect={handleDateSelect}
           initialFocus
-          className="bg-slate-800 text-white"
+          className="bg-secondary text-foreground"
         />
-        <div className="flex items-center justify-between text-white">
+        <div className="flex items-center justify-between text-foreground">
           <label htmlFor="time" className="mr-2">
             Time:
           </label>
@@ -65,7 +65,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
             type="time"
             value={localTime}
             onChange={handleTimeChange}
-            className="bg-slate-700 text-white border border-slate-600 rounded px-2 py-1"
+            className="bg-input text-foreground border border-slate-600 rounded px-2 py-1"
           />
         </div>
       </PopoverContent>
