@@ -173,7 +173,7 @@ export default function CreateCampaignPage() {
       title,
       description,
       startTimestamp,
-      startTime
+      startTime,[]
        // passing readable time for frontend display
     )
     .send({ from: account });
