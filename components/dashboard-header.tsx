@@ -53,17 +53,16 @@ export function DashboardHeader() {
   }
 
   return (
-    <header className="bg-secondary-foreground border-b border-slate-700 sticky top-0 z-10">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <ModeToggle/>
-        <div className="flex items-center">
+    <header className="bg-card border-b border-slate-700 sticky top-0 z-10">
+      <div className="container mx-auto px-4 py-3 flex">
+        <div className="flex ">
           
           <Link href="/" className="text-xl font-bold text-foreground mr-8">
             TrueVote
           </Link>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -89,6 +88,10 @@ export function DashboardHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+        <div className="px-4">
+            <ModeToggle/>
+        </div>
+      
       </div>
     </header>
   )
