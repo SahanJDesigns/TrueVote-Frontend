@@ -100,16 +100,16 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-secondary">
       <DashboardHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Campaigns</h1>
-            <p className="text-slate-400">View and participate in active voting campaigns</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Campaigns</h1>
+            <p className="text-foreground">View and participate in active voting campaigns</p>
           </div>
           <Link href="/campaigns/create" className="mt-4 md:mt-0">
-            <Button className="bg-orange-500 hover:bg-orange-600">
+            <Button className="bg-destructive hover:bg-destructive-foreground">
               <Plus className="h-4 w-4 mr-2" />
               Create Campaign
             </Button>
@@ -118,28 +118,28 @@ export default function CampaignsPage() {
 
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+                <Loader2 className="h-8 w-8 animate-spin text-destructive" />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {campaigns.map((campaign) => (
-                  <Card key={campaign.id} className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+                  <Card key={campaign.id} className="border-slate-700 bg-card backdrop-blur-sm">
                     <CardHeader>
                       <div className="flex justify-between items-start">
-                        <CardTitle className="text-xl font-bold text-white">{campaign.title}</CardTitle>
+                        <CardTitle className="text-xl font-bold text-foreground">{campaign.title}</CardTitle>
                         <Badge className={getStatusColor(campaign.status)}>
                           {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
                         </Badge>
                       </div>
-                      <CardDescription className="text-slate-400">{campaign.description}</CardDescription>
+                      <CardDescription className="text-foreground">{campaign.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        <div className="flex items-center text-sm text-slate-400">
+                        <div className="flex items-center text-sm text-foreground">
                           <Users className="h-4 w-4 mr-2" />
                           <span>{campaign.totalVotes} votes cast</span>
                         </div>
-                        <div className="flex items-center text-sm text-slate-400">
+                        <div className="flex items-center text-sm text-foreground">
                           <Calendar className="h-4 w-4 mr-2" />
                           <span>
                             {new Date(campaign.startDate).toLocaleDateString()} -{" "}
@@ -151,13 +151,13 @@ export default function CampaignsPage() {
                     <CardFooter>
                       {campaign.status === "active" ? (
                         <Link href={`/campaigns/${campaign.id}`} className="w-full">
-                          <Button className="w-full bg-orange-500 hover:bg-orange-600">Vote Now</Button>
+                          <Button className="w-full bg-destructive hover:bg-destructive-foreground">Vote Now</Button>
                         </Link>
                       ) : campaign.status === "completed" ? (
                         <Link href={`/campaigns/${campaign.id}`} className="w-full">
                           <Button
                             variant="outline"
-                            className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                            className="w-full border-slate-600 text-foreground hover:bg-mute"
                           >
                             <BarChart className="h-4 w-4 mr-2" />
                             View Results

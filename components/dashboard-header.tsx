@@ -16,6 +16,7 @@ import { Menu, LogOut, User, Settings } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
 import { log } from "console"
 import { set } from "date-fns"
+import { ModeToggle } from "./mode-toggle"
 
 export function DashboardHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -54,7 +55,9 @@ export function DashboardHeader() {
   return (
     <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        <ModeToggle/>
         <div className="flex items-center">
+          
           <Link href="/" className="text-xl font-bold text-white mr-8">
             TrueVote
           </Link>

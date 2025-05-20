@@ -40,7 +40,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal bg-slate-900 border-slate-700 text-white hover:bg-slate-800 hover:text-white",
+            "w-full justify-start text-left font-normal bg-input border-slate-700 text-white hover:bg-muted hover:text-white",
             !date && "text-slate-400",
           )}
         >
@@ -54,7 +54,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
           selected={date}
           onSelect={handleDateSelect}
           initialFocus
-          className="bg-slate-800 text-white"
+          className="bg-input text-white"
         />
         <div className="flex items-center justify-between text-white">
           <label htmlFor="time" className="mr-2">
@@ -65,7 +65,7 @@ export function DatePicker({ date, setDate }: DatePickerProps) {
             type="time"
             value={localTime}
             onChange={handleTimeChange}
-            className="bg-slate-700 text-white border border-slate-600 rounded px-2 py-1"
+            className="bg-input text-white border border-slate-600 rounded px-2 py-1"
           />
         </div>
       </PopoverContent>

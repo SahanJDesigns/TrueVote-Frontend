@@ -298,24 +298,24 @@ export default function VotingPage() {
 
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-secondary">
       <DashboardHeader />
     
       <main className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          className="text-slate-400 hover:text-white mb-6"
+          className="text-foreground hover:text-mute mb-6"
           onClick={() => router.push("/campaigns")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Campaigns
         </Button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{campaign.title}</h1>
-          <p className="text-slate-400">{campaign.description}</p>
-          <div className="mt-3 text-slate-400 flex items-center gap-2">
+          <h1 className="text-3xl font-bold text-mute mb-2">{campaign.title}</h1>
+          <p className="text-foreground">{campaign.description}</p>
+          <div className="mt-3 text-foreground flex items-center gap-2">
             {isOwner && (
-              <Badge className={"bg-purple-500/10 text-purple-500 border-purple-500/20"}>
+              <Badge className={"bg-secondary text-purple-500 border-purple-500/20"}>
                 Campaign Owner
               </Badge>
             )}
@@ -333,7 +333,7 @@ export default function VotingPage() {
         )}
 
         {isVoted && campainState === 'active' && !isOwner && (
-          <Card className="border-green-600 bg-green-900/10 backdrop-blur-sm mb-8">
+          <Card className="border-green-600 bg-card backdrop-blur-sm mb-8">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-green-500/20 p-3 w-16 h-16 mx-auto mb-4">
                 <Check className="h-10 w-10 text-green-500" />
@@ -350,10 +350,10 @@ export default function VotingPage() {
         )}
 
         {campainState === 'active' && !isVoted && !isOwner && (
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm mb-8">
+          <Card className="border-slate-700 bg-card backdrop-blur-sm mb-8">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Cast Your Vote</CardTitle>
-              <CardDescription className="text-slate-400">Select one option to vote</CardDescription>
+              <CardTitle className="text-xl font-bold text-foreground">Cast Your Vote</CardTitle>
+              <CardDescription className="text-foreground">Select one option to vote</CardDescription>
             </CardHeader>
             <CardContent>
               <RadioGroup value={selectedCandidate || ""} onValueChange={setSelectedCandidate}>
@@ -362,7 +362,7 @@ export default function VotingPage() {
                     <div key={parseInt(candidate.id)} className="flex items-start space-x-3">
                       <RadioGroupItem value={candidate.id} id={`candidate-${candidate.id}`} className="mt-1" />
                       <div className="flex-1">
-                        <Label htmlFor={`candidate-${candidate.id}`} className="text-white font-medium text-base cursor-pointer">
+                        <Label htmlFor={`candidate-${candidate.id}`} className="text-foreground font-medium text-base cursor-pointer">
                           {candidate.name}
                         </Label>
                         <p className="text-slate-400 text-sm mt-1">{candidate.description}</p>
@@ -376,7 +376,7 @@ export default function VotingPage() {
               <div className="w-full space-y-4">
                   
                     <div className="border border-slate-700 rounded-md p-4">
-                      <p className="text-sm text-slate-400 mb-3">Please verify that you are not a robot:</p>
+                      <p className="text-sm text-foreground mb-3">Please verify that you are not a robot:</p>
                       <ReCaptcha attempts={captchaAttemptNumber} setAttempts={setCaptchaAttemptNumber} setIsVerified={setCaptchaVerified}/>
                     </div>
 
@@ -387,7 +387,7 @@ export default function VotingPage() {
                     </div>
 
                   <Button
-                    className="w-full bg-orange-500 hover:bg-orange-600"
+                    className="w-full bg-destructive hover:bg-destructive-foreground"
                     disabled={!selectedCandidate || isVoting || !captchaVerified}
                     onClick={handleVote}
                   >
@@ -409,10 +409,10 @@ export default function VotingPage() {
         {(isOwner || isVoted || campainState === 'completed') && (
           <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">
+              <CardTitle className="text-xl font-bold text-foreground">
                 {campainState === 'completed' ? 'Final Results' : 'Current Results'}
               </CardTitle>
-              <CardDescription className="text-slate-400">
+              <CardDescription className="text-foreground">
                 {campainState === 'completed' 
                   ? 'Final voting results are as follows' 
                   : 'Current voting results are as follows'}
@@ -424,8 +424,8 @@ export default function VotingPage() {
                   campaign.candidates.map((candidate) => (
                     <div key={parseInt(candidate.id)} className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-white font-medium">{candidate.name}</span>
-                        <span className="text-slate-400 text-sm">
+                        <span className="text-foreground font-medium">{candidate.name}</span>
+                        <span className="text-foreground text-sm">
                           {candidate.votes} votes ({getVotePercentage(candidate.votes).toFixed(1)}%)
                         </span>
                       </div>
@@ -459,10 +459,10 @@ export default function VotingPage() {
                 {/* Total Votes Casted */}
                 <hr className="border-t border-slate-700 my-4" />
                 <div className="flex justify-end items-center">
-                  <span className="text-slate-400 text-lg">{campaign.totalVotes} Total Votes Casted</span>
+                  <span className="text-foreground text-lg">{campaign.totalVotes} Total Votes Casted</span>
                 </div>
                 <Button
-                  className="w-full bg-orange-500 hover:bg-orange-600"
+                  className="w-full bg-destructive hover:bg-destructive-foreground"
                   onClick={() => setChartType(chartType === 'linear' ? 'pie' : 'linear')}
                 >
                   Switch to {chartType === 'linear' ? 'Pie' : 'Linear'} Chart

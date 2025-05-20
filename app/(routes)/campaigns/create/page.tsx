@@ -197,13 +197,13 @@ export default function CreateCampaignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-secondary text-foreground">
       <DashboardHeader />
 
       <main className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          className="text-slate-400 hover:text-white mb-6"
+          className=" mb-6"
           onClick={() => router.push("/campaigns")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -211,16 +211,16 @@ export default function CreateCampaignPage() {
         </Button>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Create New Campaign</h1>
+          <h1 className="text-3xl font-bold   mb-2">Create New Campaign</h1>
           <p className="text-slate-400">Set up a new voting campaign for your community</p>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-8">
             {/* Campaign Details */}
-            <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+            <Card className="border-slate-700 bg-card backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Campaign Details</CardTitle>
+                <CardTitle className="text-xl font-bold  ">Campaign Details</CardTitle>
                 <CardDescription className="text-slate-400">
                   Provide the basic information about your campaign
                 </CardDescription>
@@ -233,7 +233,7 @@ export default function CreateCampaignPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-white">
+                  <Label htmlFor="title" className=" ">
                     Campaign Title
                   </Label>
                   <Input
@@ -241,12 +241,12 @@ export default function CreateCampaignPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter campaign title"
-                    className="bg-slate-900 border-slate-700 text-white"
+                    className="accent input "
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-white">
+                  <Label htmlFor="description" className=" ">
                     Description
                   </Label>
                   <Textarea
@@ -254,17 +254,17 @@ export default function CreateCampaignPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe what this campaign is about"
-                    className="bg-slate-900 border-slate-700 text-white min-h-[100px]"
+                    className="accent input    min-h-[100px]"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
                   <div className="space-y-2">
-                    <Label className="text-white">Start Date</Label>
-                    <DatePicker date={startDate} setDate={setStartDate} />
+                    <Label className=" ">Start Date</Label>
+                    <DatePicker  date={startDate} setDate={setStartDate} />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white">End Date</Label>
+                    <Label className=" ">End Date</Label>
                     <DatePicker date={endDate} setDate={setEndDate} />
                   </div>
                 </div>
@@ -272,18 +272,18 @@ export default function CreateCampaignPage() {
             </Card>
 
             {/* Candidates */}
-            <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+            <Card className="border-slate-700 bg-card backdrop-blur-sm">
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <div>
-                    <CardTitle className="text-xl font-bold text-white">Candidates</CardTitle>
+                    <CardTitle className="text-xl font-bold  ">Candidates</CardTitle>
                     <CardDescription className="text-slate-400">Add the options voters can choose from</CardDescription>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                    className="border-slate-600 text-foreground bg-destructive hover:bg-destructive-destructive"
                     onClick={addCandidate}
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -293,7 +293,7 @@ export default function CreateCampaignPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {candidates.map((candidate, index) => (
-                  <CandidateInput
+                  <CandidateInput 
                     key={candidate.id}
                     candidate={candidate}
                     index={index}
@@ -307,7 +307,7 @@ export default function CreateCampaignPage() {
 
             {/* Submit */}
             <div className="flex justify-end">
-              <Button type="submit" className="bg-orange-500 hover:bg-orange-600" disabled={isSubmitting} size="lg">
+              <Button type="submit" className="bg-destructive hover:bg-destructive-foreground" disabled={isSubmitting} size="lg">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
