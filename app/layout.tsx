@@ -9,10 +9,15 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "DeVote - Blockchain Voting Platform",
   description: "Secure, transparent, and verifiable voting platform powered by blockchain",
+<<<<<<< HEAD
     generator: 'v0.dev',
       icons: {
     icon: "/icontv.ico", // or .png
   },
+=======
+    generator: 'v0.dev'
+  
+>>>>>>> issue-fix
 }
 
 export default function RootLayout({

@@ -42,6 +42,7 @@ export default function RegisterPage() {
   const [hasCaptured, setHasCaptured] = useState(false);
   const [capturedImage, setCapturedImage ] = useState<any | null>(null);
   
+ 
   const handleConnect = async () => {
     setIsConnecting(true)
     setError(null)
@@ -200,8 +201,8 @@ export default function RegisterPage() {
     }, []);
   
     useEffect(() => {
-      if (isModelLoading) return;
 
+      if (isModelLoading) return;
       const detectFace = async () => {
         if (hasCaptured) return;
         if (!webcamRef.current || !canvasRef.current) return;
@@ -211,10 +212,11 @@ export default function RegisterPage() {
   
         const canvas = canvasRef.current;
         const displaySize = { width: video.width, height: video.height };
+        if (!video || video.readyState < 2 || video.width === 0 || video.height === 0) return;
         faceapi.matchDimensions(canvas, displaySize);
+        
   
-        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks();
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
   
         if (detections.length === 0) {
           if (currentStatus !== 'no_face') {
@@ -262,6 +264,7 @@ export default function RegisterPage() {
         } else {
           newStatus = 'correct';
         }
+
         if (newStatus !== currentStatus) {
           setCurrentStatus(newStatus);
           switch (newStatus) {
@@ -277,7 +280,7 @@ export default function RegisterPage() {
               setMessage('Face is aligned correctly');
               setMessageType('success');
               // Only capture if we haven't captured before
-              if (!hasCaptured) {
+              if (!hasCaptured && webcamRef.current) {
                 const imageSrc = webcamRef.current.getScreenshot();
                 if (imageSrc) {
                   setCapturedImage(imageSrc);
@@ -291,7 +294,7 @@ export default function RegisterPage() {
       };
       const interval = setInterval(detectFace, 100);
       return () => clearInterval(interval);
-    }, [isModelLoading, currentStatus, hasCaptured]);
+    }, [isModelLoading, currentStatus,hasCaptured]);
   
     const getMessageStyle = () => {
       switch (messageType) {
@@ -413,45 +416,46 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="rounded-lg overflow-hidden border border-slate-700">
-                  {!hasCaptured ? (
-                  <div className="relative mb-8 shadow-lg rounded-lg overflow-hidden bg-slate-800">
-                    <Webcam
-                    ref={webcamRef}
-                    className="rounded-lg"
-                    width={640}
-                    height={480}
-                    videoConstraints={{
-                      facingMode: 'user',
-                    }}
-                    screenshotFormat="image/jpeg"
-                    onUserMedia={() => {
-                      if (webcamRef.current && canvasRef.current) {
+              <div className={`relative mb-8 shadow-lg rounded-lg overflow-hidden bg-slate-800 ${hasCaptured ? 'hidden' : ''}`}>
+                <Webcam
+                  ref={webcamRef}
+                  className="rounded-lg"
+                  width={640}
+                  height={480}
+                  videoConstraints={{
+                    facingMode: 'user',
+                  }}
+                  screenshotFormat="image/jpeg"
+                  onUserMedia={() => {
+                    if (webcamRef.current && canvasRef.current) {
                       const video = webcamRef.current.video;
                       const canvas = canvasRef.current;
                       if (video && canvas) {
                         canvas.width = video.videoWidth;
                         canvas.height = video.videoHeight;
                       }
-                      }
-                    }}
-                    />
-                    <canvas
-                    ref={canvasRef}
-                    className="absolute top-0 left-0"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    />
-                  </div>
-                  ) : (
-                  <div className="relative">
-                    <img src={capturedImage || ""} alt="Captured face" className="w-full" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
-                    <Check className="h-16 w-16 text-green-500" />
-                    </div>
-                  </div>
-                  )}
+                    }
+                  }}
+                />
+                <canvas
+                  ref={canvasRef}
+                  className="absolute top-0 left-0"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              </div>
+
+              <div className={`relative ${!hasCaptured ? 'hidden' : ''}`}>
+                {capturedImage && (
+                  <img src={capturedImage} alt="Captured face" className="w-full" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
+                  <Check className="h-16 w-16 text-green-500" />
+                </div>
+              </div>
+
                 </div>
                 <div className={`p-4 rounded-lg border ${getMessageStyle()} text-center`}>
                   <p className="text-sm">{message}</p>

@@ -38,6 +38,7 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
   const retakeImage = () => {
     setFaceScan(null)
     setIsCaptured(false)
+    setError(null)
   }
 
   const verifyBiometric = async () => {
@@ -79,16 +80,15 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
         setError(null)
       }
       else {
-        throw new Error("Biometric verification failed. Please try again.")
+        setError("Biometric verification failed. Please try again.")
+        setVerified(false)
+
       }
 
     } catch (error) {
-      console.error("Error during biometric verification:", error)
-      setError("Biometric verification failed. Please try again.")
-      setVerified(false)
+      console.error("Error during biometric verification:", error)  
     } finally {
       setIsVerifying(false)
-      setFaceScan(null)
     }
   }
 
