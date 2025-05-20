@@ -4,4 +4,4 @@ import CampaignFactoryABI from './abis/CampaignFactory.json';
 export const CAMPAIGN_ABI = CampaignABI.abi;
 export const FACTORY_ABI = CampaignFactoryABI.abi;
 
-export const FACTORY_ADDRESS = "0xD4208DF1Ea856655558F8267b6b2857f01c57861"; // ← paste from deploy
+export const FACTORY_ADDRESS = "0x710F0F648130fe91d58A613dc1364e3A6EF1E718"; // ← paste from deploy

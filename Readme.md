@@ -1,74 +1,115 @@
+# TrueVote-Frontend
 
- 
-# Backend Setup Guide
+A decentralized voting platform built with Next.js and Ethereum blockchain technology.
 
-This guide will help you set up the backend environment for the project.
+## Overview
 
----
+TrueVote is a secure, transparent, and verifiable voting platform powered by blockchain technology. The frontend is built using Next.js, and it interacts with smart contracts deployed on an Ethereum blockchain.
 
-## ✅ Prerequisites
+## Prerequisites
 
-Before proceeding, make sure you have the following installed on your system:
+Before setting up this project, you need to have the following installed:
 
-### 1. **Visual Studio Code**
-- Download: [https://code.visualstudio.com/](https://code.visualstudio.com/)
+- [Node.js](https://nodejs.org/) (v18 or later)
+- [npm](https://www.npmjs.com/) (v8 or later) or [yarn](https://yarnpkg.com/)
+- [MetaMask](https://metamask.io/) browser extension
+- [Ganache](https://trufflesuite.com/ganache/) for local blockchain development
 
-### 2. **CMake**
-- Download: [https://cmake.org/download/](https://cmake.org/download/)
+## Setup Instructions
 
----
-
-## 🔑 Required Environment Variables
-
-Fill in the following keys in your environment (e.g., `.env` file or environment variables manager of your OS):
-
-### **MySQL Database**
-```env
-DB_USER=<your_db_username>
-DB_PASSWORD=<your_db_password>
-DB_HOST=<your_db_host>
-DB_PORT=<your_db_port>
-DB_NAME=<your_db_name>
-```
-
-### **AWS Credentials**
-```env
-AWS_ACCESS_KEY_ID=<your_aws_access_key>
-AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>
-AWS_REGION=<your_aws_region>
-S3_BUCKET_NAME=<your_s3_bucket_name>
-```
-
-### **RECAPTCHA**
-```env
-RECAPTCHA_SECRET_KEY=<your_secret_key>
-```
-
----
-
-## 📦 Install Required Python Packages
-
-Make sure you have Python and `pip` installed.
-
-Then install dependencies from `requirements.txt`:
+### 1. Clone the repositories
 
 ```bash
-pip install -r requirements.txt
+# Clone this frontend repository
+git clone https://github.com/yourusername/TrueVote-Frontend.git
+cd TrueVote-Frontend
+
+# Clone the smart contracts repository
+git clone https://github.com/DepartmentX/Solidity-Team.git ../Solidity-Team
 ```
 
----
+### 2. Set up and deploy smart contracts
 
-## 🚀 Start FastAPI Server
+Follow the instructions in the [Solidity-Team README](https://github.com/DepartmentX/Solidity-Team) to:
+1. Set up the Solidity development environment
+2. Deploy the smart contracts to Ganache
+3. Make note of the deployed contract addresses
 
-After setting up everything, run the following command to start the FastAPI endpoint:
+### 3. Configure the frontend
+
+1. Copy the contract ABIs from the Solidity-Team project:
 
 ```bash
-uvicorn app.main:app --reload 
+# Make sure the ABIs directory exists
+mkdir -p lib/abis
+
+# Copy the ABI files (adjust paths if needed)
+cp ../Solidity-Team/artifacts/contracts/Campaign.sol/Campaign.json lib/abis/
+cp ../Solidity-Team/artifacts/contracts/CampaignFactory.sol/CampaignFactory.json lib/abis/
 ```
 
+2. Update the contract addresses in the frontend:
 
-## 📚 Additional Resources
+Edit the `lib/constants.ts` file and update the `FACTORY_ADDRESS` value with the address of the deployed CampaignFactory contract from Ganache:
 
-- **FastAPI Docs**: [https://fastapi.tiangolo.com/](https://fastapi.tiangolo.com/)
-- **MySQL Docs**: [https://dev.mysql.com/doc/](https://dev.mysql.com/doc/)
-- **AWS S3 Docs**: [https://docs.aws.amazon.com/s3/index.html](https://docs.aws.amazon.com/s3/index.html)
+```typescript
+export const FACTORY_ADDRESS = "YOUR_DEPLOYED_FACTORY_CONTRACT_ADDRESS";
+```
+
+### 4. Install dependencies
+
+```bash
+npm install
+```
+
+### 5. Download face detection models
+
+The project uses face detection for biometric verification. Run the script to download the required models:
+
+```bash
+node scripts/download-models.js
+```
+
+## Running the Application
+
+1. Make sure Ganache is running and your contracts are deployed with the same addresses you configured in `lib/constants.ts`.
+
+2. Start the development server:
+
+```bash
+npm run dev
+```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser to access the application.
+
+4. Connect MetaMask to your Ganache blockchain:
+   - Open MetaMask
+   - Add a new network with:
+     - Network Name: Ganache
+     - New RPC URL: http://127.0.0.1:7545 (or your Ganache RPC URL)
+     - Chain ID: 1337
+     - Currency Symbol: ETH
+   - Import a Ganache account using its private key
+
+## Features
+
+- Secure user authentication via MetaMask and face recognition
+- Create and manage voting campaigns
+- Participate in voting campaigns
+- Real-time results and statistics
+- Transparent voting records stored on the blockchain
+
+## Development
+
+The project is structured as follows:
+- `app/`: Next.js app directory with pages and routes
+- `components/`: React components for UI elements
+- `hooks/`: Custom React hooks
+- `lib/`: Utility functions and constants
+- `public/`: Static assets and face detection models
+- `scripts/`: Helper scripts
+- `types/`: TypeScript type definitions
+
+## License
+
+[MIT](LICENSE)
