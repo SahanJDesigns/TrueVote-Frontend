@@ -185,13 +185,8 @@ export default function CampaignsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<<<<<<< HEAD
-                {campaigns.map((campaign) => (
-                  <Card key={campaign.id} className="border-slate-700 bg-card backdrop-blur-sm">
-=======
                 {filteredCampaigns.map((campaign) => (
                   <Card key={campaign.id} className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
->>>>>>> issue-fix
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-xl font-bold text-foreground">{campaign.title}</CardTitle>
@@ -199,7 +194,10 @@ export default function CampaignsPage() {
                           {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
                         </Badge>
                       </div>
-                      <CardDescription className="text-foreground">{campaign.description}</CardDescription>
+                      <CardDescription className="text-foreground">{campaign.description.length > 100
+                        ? campaign.description.slice(0, 100) + "..."
+                        : campaign.description}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
@@ -225,11 +223,7 @@ export default function CampaignsPage() {
                         <Link href={`/campaigns/${campaign.id}`} className="w-full">
                           <Button
                             variant="outline"
-<<<<<<< HEAD
-                            className="w-full border-slate-600 text-foreground hover:bg-mute"
-=======
                             className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 mt-auto"
->>>>>>> issue-fix
                           >
                             <BarChart className="h-4 w-4 mr-2" />
                             View Results

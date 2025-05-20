@@ -184,13 +184,9 @@ export default function CreateCampaignPage() {
       title,
       description,
       startTimestamp,
-<<<<<<< HEAD
-      startTime,[]
-=======
       startTime,
       allowedWallets,
       !isPrivate
->>>>>>> issue-fix
        // passing readable time for frontend display
     )
     .send({ from: account });
