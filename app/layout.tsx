@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "DeVote - Blockchain Voting Platform",
   description: "Secure, transparent, and verifiable voting platform powered by blockchain",
     generator: 'v0.dev'
+  
 }
 
 export default function RootLayout({

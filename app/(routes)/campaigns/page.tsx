@@ -23,7 +23,29 @@ interface Campaign {
 export default function CampaignsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const [search, setSearch] = useState("")
+  const [startDateFilter, setStartDateFilter] = useState("")
+  const [endDateFilter, setEndDateFilter] = useState("")
+  const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([])
 
+
+
+  function getFilteredCampaigns() {
+    return campaigns
+      .filter(campaign => {
+        const matchesName = campaign.title.toLowerCase().includes(search.toLowerCase())
+        const matchesStartDate = startDateFilter ? new Date(campaign.startDate) >= new Date(startDateFilter) : true
+        const matchesEndDate = endDateFilter ? new Date(campaign.endDate) <= new Date(endDateFilter) : true
+        return matchesName && matchesStartDate && matchesEndDate
+      })
+      .sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())
+  }
+  useEffect(() => {
+    const filtered = getFilteredCampaigns()
+    setFilteredCampaigns(filtered)
+  }, [search, startDateFilter, endDateFilter, campaigns])
+
+ 
   useEffect(() => {
     const fetchCampaigns = async () => {
       if (typeof window.ethereum === "undefined") {
@@ -36,7 +58,8 @@ export default function CampaignsPage() {
 
       try {
         await window.ethereum.request({ method: "eth_requestAccounts" })
-        const addresses: string[] = await factory.methods.getDeployedCampaigns().call()
+        const walletAddress = sessionStorage.getItem("wallet_address");
+        const addresses: string[] = await factory.methods.getCampaignsForVoter(walletAddress).call()
 
         const campaignDetails: Campaign[] = await Promise.all(
           addresses.map(async (address, index) => {
@@ -102,7 +125,7 @@ export default function CampaignsPage() {
   return (
     <div className="min-h-screen bg-slate-900">
       <DashboardHeader />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-screen-xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Campaigns</h1>
@@ -115,6 +138,46 @@ export default function CampaignsPage() {
             </Button>
           </Link>
         </div>
+        {/*Filter campaigns by name, start date, and end date*/}
+        <div className="mb-6 flex flex-col md:flex-row md:items-end gap-4 p-1">
+          <div className="flex-1">
+            <label className="block text-slate-400 mb-1 text-sm" htmlFor="search">
+              Campaign Name
+            </label>
+            <input
+              id="search"
+              type="text"
+              placeholder="Search by name..."
+              className="w-full px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-slate-400 mb-1 text-sm" htmlFor="start-date">
+              Start Date
+            </label>
+            <input
+              id="start-date"
+              type="date"
+              className="px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              value={startDateFilter}
+              onChange={e => setStartDateFilter(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-slate-400 mb-1 text-sm" htmlFor="end-date">
+              End Date
+            </label>
+            <input
+              id="end-date"
+              type="date"
+              className="px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              value={endDateFilter}
+              onChange={e => setEndDateFilter(e.target.value)}
+            />
+          </div>
+        </div>
 
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
@@ -122,7 +185,7 @@ export default function CampaignsPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <Card key={campaign.id} className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
                     <CardHeader>
                       <div className="flex justify-between items-start">
@@ -157,7 +220,7 @@ export default function CampaignsPage() {
                         <Link href={`/campaigns/${campaign.id}`} className="w-full">
                           <Button
                             variant="outline"
-                            className="w-full border-slate-600 text-slate-300 hover:bg-slate-700"
+                            className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 mt-auto"
                           >
                             <BarChart className="h-4 w-4 mr-2" />
                             View Results
