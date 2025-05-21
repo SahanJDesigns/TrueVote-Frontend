@@ -375,9 +375,9 @@ export default function CreateCampaignPage() {
                   </div>
                   {isPrivate && (
                     <div className="mt-4">
-                        <Label className="text-white mb-1 block py-2">Upload Allowed Wallets (CSV)</Label>
+                        <Label className="text-foreground mb-1 block py-2">Upload Allowed Wallets (CSV)</Label>
                         <div
-                          className="bg-slate-900 border border-dashed border-slate-700 rounded-md p-4 text-center cursor-pointer hover:border-orange-500 transition-colors"
+                          className="bg-card border border-dashed border-slate-700 rounded-md p-4 text-center cursor-pointer hover:border-orange-500 transition-colors"
                           onDragOver={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -408,18 +408,18 @@ export default function CreateCampaignPage() {
                               Drag and drop your CSV file here
                             </p>
                           ) : (
-                            <div className="flex items-center justify-between bg-slate-800 rounded p-3 mt-2">
+                            <div className="flex items-center justify-between bg-input rounded p-3 mt-2">
                               <div className="flex items-center gap-3">
                                 <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
                                   <rect width="24" height="24" rx="6" fill="#F59E42" fillOpacity="0.15"/>
                                   <path d="M7 3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.828a2 2 0 0 0-.586-1.414l-2.828-2.828A2 2 0 0 0 14.172 3H7zm7 1.414L18.586 9H15a1 1 0 0 1-1-1V4.414z" fill="#F59E42"/>
                                 </svg>
                                 <div className="text-left">
-                                  <div className="text-white font-medium">
+                                  <div className="text-foreground font-medium">
                                     {/* Show filename and size if available */}
                                     {(document?.getElementById("csv-upload-input") as HTMLInputElement | null)?.files?.[0]?.name || "wallets.csv"}
                                   </div>
-                                  <div className="text-slate-400 text-xs">
+                                  <div className="text-foreground text-xs">
                                     {(() => {
                                       const file = (document?.getElementById("csv-upload-input") as HTMLInputElement | null)?.files?.[0];
                                       if (file) {

@@ -21,7 +21,6 @@ const ReCaptcha: React.FC<ReCaptchaProps> = ({ attempts, setAttempts, setIsVerif
     setAttempts(attempts + 1);
   
     if (!verifiedToken) {
-      alert('CAPTCHA verification failed. Please try again.');
       setIsVerified(true);
       recaptchaRef.current?.reset(); // Reset the CAPTCHA
       return;
@@ -38,13 +37,12 @@ const ReCaptcha: React.FC<ReCaptchaProps> = ({ attempts, setAttempts, setIsVerif
       if (data.success) {
         setIsVerified(true);
       } else {
-        alert('CAPTCHA verification failed. Please try again.');
+        
         setIsVerified(false);
         recaptchaRef.current?.reset(); // Reset the CAPTCHA
       }
     } catch (error) {
-      console.error('Error verifying CAPTCHA:', error);
-      alert('An error occurred during CAPTCHA verification. Please try again.');
+     
       setIsVerified(true);
       recaptchaRef.current?.reset(); // Reset the CAPTCHA
     }

@@ -141,38 +141,38 @@ export default function CampaignsPage() {
         {/*Filter campaigns by name, start date, and end date*/}
         <div className="mb-6 flex flex-col md:flex-row md:items-end gap-4 p-1">
           <div className="flex-1">
-            <label className="block text-slate-400 mb-1 text-sm" htmlFor="search">
+            <label className="block text-foreground mb-1 text-sm" htmlFor="search">
               Campaign Name
             </label>
             <input
               id="search"
               type="text"
               placeholder="Search by name..."
-              className="w-full px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2 rounded-md bg-card text-foreground border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-slate-400 mb-1 text-sm" htmlFor="start-date">
+            <label className="block text-foreground mb-1 text-sm" htmlFor="start-date">
               Start Date
             </label>
             <input
               id="start-date"
               type="date"
-              className="px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="px-4 py-2 rounded-md bg-card text-foreground border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={startDateFilter}
               onChange={e => setStartDateFilter(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-slate-400 mb-1 text-sm" htmlFor="end-date">
+            <label className="block text-foreground mb-1 text-sm" htmlFor="end-date">
               End Date
             </label>
             <input
               id="end-date"
               type="date"
-              className="px-4 py-2 rounded-md bg-slate-800 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="px-4 py-2 rounded-md bg-card text-foreground border border-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={endDateFilter}
               onChange={e => setEndDateFilter(e.target.value)}
             />
@@ -186,7 +186,7 @@ export default function CampaignsPage() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCampaigns.map((campaign) => (
-                  <Card key={campaign.id} className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+                  <Card key={campaign.id} className="border-slate-700 bg-card backdrop-blur-sm">
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-xl font-bold text-foreground">{campaign.title}</CardTitle>
@@ -223,14 +223,14 @@ export default function CampaignsPage() {
                         <Link href={`/campaigns/${campaign.id}`} className="w-full">
                           <Button
                             variant="outline"
-                            className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 mt-auto"
+                            className="w-full border-slate-600 text-foreground hover:bg-slate-700 mt-auto"
                           >
                             <BarChart className="h-4 w-4 mr-2" />
                             View Results
                           </Button>
                         </Link>
                       ) : (
-                        <Button disabled className="w-full bg-slate-700 text-slate-400 cursor-not-allowed">
+                        <Button disabled className="w-full bg-input text-foreground cursor-not-allowed">
                           Coming Soon
                         </Button>
                       )}

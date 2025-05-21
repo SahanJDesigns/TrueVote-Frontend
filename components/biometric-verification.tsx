@@ -71,7 +71,7 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
       });
       
       const data = await response.json()
-  
+      console.log(data)
       if (data.is_match) {
         setVerified(true)
         setSpoofingScore(data.spoofing_score)
@@ -82,7 +82,6 @@ export function BiometricVerification({verified, setVerified,attemptnumber,setAt
       else {
         setError("Biometric verification failed. Please try again.")
         setVerified(false)
-
       }
 
     } catch (error) {
