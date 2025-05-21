@@ -50,8 +50,8 @@ interface Campaign {
 }
 
 export default function VotingPage() {
-  const usedPrivateKey = sessionStorage.getItem("private_key");
-  const { privateKey, commitment } = new Identity(usedPrivateKey as string);
+  const usedPrivateKey = typeof window !== "undefined" ? sessionStorage.getItem("private_key") : null;
+  const { privateKey, commitment } = new Identity(usedPrivateKey || undefined);
   const [web3, setWeb3] = useState<Web3 | null>(null)
   const [campaignAddress, setCampaignAddress] = useState<string | null>(null)
   const [account, setAccount] = useState<string>("")
@@ -91,7 +91,7 @@ export default function VotingPage() {
   }, []);
 
   useEffect(() => {
-    if (privateKey) {
+    if (typeof window !== "undefined" && privateKey) {
       sessionStorage.setItem("private_key", privateKey as string);
     }
   }, [privateKey, commitment]);
