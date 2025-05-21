@@ -29,6 +29,7 @@ import {
   Tooltip,
   Legend
 } from "chart.js";
+import { Identity } from "@semaphore-protocol/identity"
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -49,6 +50,8 @@ interface Campaign {
 }
 
 export default function VotingPage() {
+  const usedPrivateKey = typeof window !== "undefined" ? sessionStorage.getItem("private_key") : null;
+  const { privateKey, commitment } = new Identity(usedPrivateKey || undefined);
   const [web3, setWeb3] = useState<Web3 | null>(null)
   const [campaignAddress, setCampaignAddress] = useState<string | null>(null)
   const [account, setAccount] = useState<string>("")
@@ -86,6 +89,12 @@ export default function VotingPage() {
 
     return () => clearInterval(interval); // Cleanup on component unmount
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && privateKey) {
+      sessionStorage.setItem("private_key", privateKey as string);
+    }
+  }, [privateKey, commitment]);
 
   useEffect(() => {
     const loadCampaign = async () => {
@@ -246,6 +255,13 @@ export default function VotingPage() {
 
     setIsVoting(true)
     setError(null)
+
+    try {
+      const contract = new web3.eth.Contract(CAMPAIGN_ABI, campaignAddress)
+      await contract.methods.joinGroup(commitment).send({ from: account })
+    } catch (err: any) {
+      setError(err.message || "Voting failed. Please try again.")
+    }
 
     try {
       const contract = new web3.eth.Contract(CAMPAIGN_ABI, campaignAddress)
